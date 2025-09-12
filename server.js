@@ -45,7 +45,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/withdrawals", withdrawalRoutes);
 
 // Home
-app.get("/", (req, res) => res.send("Capital Connect Backend Running"));
+app.get("/", (req, res) => res.send("VertexCapital Backend Running"));
 
 // Webhook
 app.post("/api/finnhub-webhook", (req, res) => {
