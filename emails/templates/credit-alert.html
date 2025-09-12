@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Credit Alert — {{firmName}}</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 0;">
+    <tr>
+      <td text-align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;">
+          
+          <!-- Logo Section -->
+          <tr>
+            <td text-align="center" style="padding:20px;background:#ffffff;">
+              <img src="{{logoUrl}}" alt="{{fallback firmName 'Capital Connect'}} Logo" style="max-width:150px;height:auto;" />
+            </td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#0ea5e9;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
+              {{firmName}} — Credit Alert
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding:24px;line-height:1.6;">
+              <p style="margin:0 0 12px;">Hi {{fallback userName "there"}},</p>
+              <p style="margin:0 0 12px;">Your account has been credited by <b>{{firmName}}</b>.</p>
+              <p style="margin:0 0 12px;">Amount: <b>${{amount}}</b></p>
+              <p style="margin:0 0 12px;">New balance: <b>${{newBalance}}</b></p>
+              <p style="margin:16px 0 0;">Thank you for investing with {{firmName}}.</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:16px 24px;font-size:12px;color:#64748b;background:#f8fafc;">
+              This is an automated notification from Capital Connect.
+            </td>
+          </tr>
+        
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,268 @@
+// services/adminService.js
+const Firm = require("../models/Firm");
+const User = require("../models/User");
+const Portfolio = require("../models/Portfolio");
+const Transaction = require("../models/transaction");
+const News = require("../models/news");
+const Email = require("./email");  // ✅ no destructure
+
+
+// Create firm
+exports.createFirm = async (data, adminId) => {
+  if (!data.name) throw new Error("Firm name is required");
+
+  return await Firm.create({
+    ...data,
+    admin_id: adminId,  // ✅ integer from JWT
+  });
+};
+
+// Upload firm profile picture
+exports.uploadFirmProfile = async (firmId, file, body = {}) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+
+  if (file?.path) firm.profile_Picture = file.path; // Cloudinary URL
+  if (body?.name) firm.name = body.name;
+
+  await firm.save();
+  return firm;
+};
+
+// ✅ FIXED: Create or update user in firm
+exports.createUserInFirm = async (firmId, data) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+
+  // Check if user already exists
+  let user = await User.findOne({ where: { email: data.email } });
+
+  if (user) {
+    // ✅ If user exists, just attach them to the firm
+    user.firm_id = firmId;
+    user.connected = true;
+    await user.save();
+  } else {
+    // ✅ If user doesn’t exist yet, create them
+    user = await User.create({
+      firm_id: firmId,
+      name: data.name,
+      email: data.email,
+      password_hash: null,  
+      status: "ACTIVE",
+      account_level: "BASIC",
+      connected: true,
+    });
+  }
+
+  console.log(`✅ User ${user.email} attached to firm ${firm.name}`);
+  return user;
+};
+
+
+// Credit user balance
+exports.creditUserBalance = async (userId, amount) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+  const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
+
+  user.balance = parseFloat(user.balance || 0) + Number(amount);
+  await user.save();
+
+  await Transaction.create({
+    userId,
+    type: "CREDIT",
+    amount: Number(amount),
+    description: `Credited by firm ${firm ? firm.name : user.firm_id}`,
+  });
+
+  await Email.sendCreditAlert({
+    to: user.email,
+    userName: user.fullName || user.name,
+    firmName: firm?.name || "Your Firm",
+    amount: Number(amount).toFixed(2),
+    newBalance: Number(user.balance).toFixed(2),
+  });
+
+  return { user, amount: Number(amount) };
+};
+
+// Set user profit
+exports.setUserProfit = async (userId, amount, range) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+  const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
+
+  user.balance = parseFloat(user.balance || 0) + Number(amount);
+  await user.save();
+
+  await Transaction.create({
+    userId,
+    type: "PROFIT",
+    amount: Number(amount),
+    description: `Profit added (${range})`,
+  });
+
+  await Email.sendProfitTopup({
+    to: user.email,
+    userName: user.fullName || user.name,
+    firmName: firm?.name || "Your Firm",
+    amount: Number(amount).toFixed(2),
+    range,
+    newBalance: Number(user.balance).toFixed(2),
+  });
+
+  return user;
+};
+
+// Enhanced adminService - assignAsset method
+exports.assignAsset = async (userId, data) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+  
+  // Validate asset exists and get current price
+  let currentPrice = 0;
+  let assetSymbol = data.assetSymbol || data.assetName;
+  
+  try {
+    if (data.assetType === "CRYPTO") {
+      const priceData = await cryptoService.getPrice(assetSymbol.toLowerCase());
+      const coinKey = Object.keys(priceData)[0]; // Get first key
+      currentPrice = priceData[coinKey]?.usd || 0;
+    } else if (data.assetType === "STOCK") {
+      const quoteData = await stockService.getQuote(assetSymbol, process.env.FINNHUB_API_KEY);
+      currentPrice = quoteData.c || 0;
+    }
+    
+    if (!currentPrice || currentPrice === 0) {
+      throw new Error("Invalid asset symbol or unable to fetch price");
+    }
+  } catch (error) {
+    throw new Error(`Failed to validate asset: ${error.message}`);
+  }
+  
+  // Calculate quantity based on assigned value
+  const quantity = data.assignedValue / currentPrice;
+  
+  const portfolio = await Portfolio.create({
+    userId,
+    assetName: data.assetName,
+    assetSymbol: assetSymbol,
+    assetType: data.assetType,
+    stake: data.stake || 100, // Default to 100% if not specified
+    quantity,
+    purchasePrice: currentPrice,
+    currentValue: data.assignedValue,
+    assignedValue: data.assignedValue,
+    profitLoss: 0,
+    createdAt: new Date(),
+    lastUpdated: new Date()
+  });
+  
+  // Update user balance
+  user.balance = parseFloat(user.balance || 0) + Number(data.assignedValue);
+  await user.save();
+  
+  // Create transaction record
+  await Transaction.create({
+    userId,
+    type: "ASSET_ASSIGNMENT",
+    amount: Number(data.assignedValue),
+    description: `Asset assignment: ${data.assetName} (${data.assetType})`,
+    meta: {
+      assetName: data.assetName,
+      assetType: data.assetType,
+      quantity,
+      purchasePrice: currentPrice,
+      assetSymbol: assetSymbol
+    },
+    created_at: new Date()
+  });
+  
+  return portfolio;
+};
+
+// Upgrade account
+exports.upgradeUserAccount = async (userId, level) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+  const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
+
+  user.account_level = level;
+  await user.save();
+
+  await Email.sendAccountUpgraded({
+    to: user.email,
+    userName: user.fullName || user.name,
+    firmName: firm?.name || "Your Firm",
+    level,
+  });
+
+  return user;
+};
+
+// Suspend / Unsuspend
+exports.suspendUser = async (userId, action, reason = "") => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+  const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
+
+  user.status = action === "SUSPEND" ? "SUSPENDED" : "ACTIVE";
+  await user.save();
+
+  if (action === "SUSPEND") {
+    await Email.sendAccountSuspended({
+      to: user.email,
+      userName: user.fullName || user.name,
+      firmName: firm?.name || "Your Firm",
+      reason,
+    });
+  } else if (action === "UNSUSPEND") {
+    await Email.sendAccountUnsuspended({
+      to: user.email,
+      userName: user.fullName || user.name,
+      firmName: firm?.name || "Your Firm",
+    });
+  }
+
+  return user;
+};
+
+// ✅ // Update user status directly
+exports.updateUserStatus = async (userId, status) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+  const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
+
+  user.status = status;
+  await user.save();
+
+  await Email.sendStatusChanged({
+    to: user.email,
+    userName: user.fullName || user.name,
+    firmName: firm?.name || "Your Firm",
+    status,
+  });
+
+  return user;
+};
+
+// Create news
+exports.createNews = async (data, file) => {
+  return await News.create({
+    ...data,
+    imageUrl: file?.path || null,
+  });
+};
+
+// Edit news
+exports.editNews = async (newsId, data, file) => {
+  const news = await News.findByPk(newsId);
+  if (!news) throw new Error("News not found");
+
+  Object.assign(news, data);
+  if (file?.path) news.imageUrl = file.path;
+
+  await news.save();
+  return news;
+};

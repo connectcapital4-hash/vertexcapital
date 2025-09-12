@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Account Suspended — {{firmName}}</title>
+<style>
+  /* Dark mode media query for supported clients */
+  @media (prefers-color-scheme: dark) {
+    .darkmode-bg { background: #1e293b !important; }
+    .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
+    .darkmode-text { color: #e2e8f0 !important; }
+    .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
+    .darkmode-header { background: #ef4444 !important; color: #ffffff !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 0;">
+    <tr>
+      <td text-align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;" class="darkmode-bg">
+          
+          <!-- Logo Section -->
+          <tr>
+            <td text-align="center" style="padding:20px;background:#ffffff;" class="darkmode-bg">
+              <img src="{{logoUrl}}" alt="{{fallback firmName 'Vertex Capital'}} Logo" style="max-width:150px;height:auto;" />
+            </td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#ef4444;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;" class="darkmode-header">
+              {{firmName}} — Account Suspended
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding:24px;line-height:1.6;" class="darkmode-content">
+              <p style="margin:0 0 12px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
+              <p style="margin:0 0 12px;" class="darkmode-text">Your <b>{{firmName}}</b> account has been <b>suspended</b>.</p>
+              {{#if reason}}
+                <p style="margin:0 0 12px;" class="darkmode-text">Reason: <i>{{reason}}</i></p>
+              {{/if}}
+              <p style="margin:16px 0 0;" class="darkmode-text">
+                Withdraw requests will be disabled until your account is reactivated.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:16px 24px;font-size:12px;color:#64748b;background:#f8fafc;" class="darkmode-footer">
+              If you believe this is a mistake, please contact your firm's admin.
+            </td>
+          </tr>
+        
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
