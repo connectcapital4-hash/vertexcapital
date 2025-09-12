@@ -1,48 +1,61 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Connect to {{fallback firmName "your firm"}}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connect to {{fallback firmName "your firm"}}</title>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            .darkmode-bg { background: #1e293b !important; }
+            .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
+            .darkmode-text { color: #e2e8f0 !important; }
+            .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
+            .darkmode-otp { border: 2px dashed #7bb2ff !important; color: #7bb2ff !important; }
+            .darkmode-link { color: #7bb2ff !important; }
+        }
+    </style>
 </head>
 <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 0;">
     <tr>
       <td text-align="center">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;">
-          
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;" class="darkmode-bg">
+
           <!-- Logo Section -->
           <tr>
-            <td text-align="center" style="padding:20px;background:#ffffff;">
-              <img src="{{logoUrl}}" alt="{{fallback firmName 'Capital Connect'}} Logo" style="max-width:150px;height:auto;" />
+            <td text-align="center" style="padding:20px;background:#ffffff;" class="darkmode-bg">
+              <img src="{{logoUrl}}" alt="Vertex Capital Logo" style="max-width:180px;height:auto;" />
             </td>
           </tr>
 
           <!-- Header -->
           <tr>
-            <td style="background:#0ea5e9;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
+            <td style="background:#0066cc;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
               Connect to {{fallback firmName "Firm"}}
             </td>
           </tr>
           
           <!-- Body -->
           <tr>
-            <td style="padding:24px;line-height:1.6;">
-              <p style="margin:0 0 12px;">Hi {{fallback userName "there"}},</p>
-              <p style="margin:0 0 12px;">
-                Use the verification code below to connect your Capital Connect account to <b>{{firmName}}</b>.  
+            <td style="padding:24px;line-height:1.6;background:#ffffff;" class="darkmode-content">
+              <p style="margin:0 0 16px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
+              <p style="margin:0 0 16px;" class="darkmode-text">
+                Use the verification code below to connect your Vertex Capital account to <b>{{firmName}}</b>.  
                 It expires in {{fallback expiresInMinutes 24}} minutes.
               </p>
-              <div style="margin:16px 0;padding:16px 24px;border:2px dashed #0ea5e9;border-radius:12px;text-align:center;font-size:28px;font-weight:800;letter-spacing:2px;">
+              <div style="margin:16px 0;padding:16px 24px;border:2px dashed #0066cc;border-radius:12px;text-align:center;font-size:28px;font-weight:800;letter-spacing:2px;color:#0066cc;" class="darkmode-otp">
                 {{otp}}
               </div>
+              <p style="margin:16px 0 0;font-size:14px;color:#64748b;" class="darkmode-text">If you didn't request this, please ignore.</p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:16px 24px;font-size:12px;color:#64748b;background:#f8fafc;">
-              If you didn't request this, please ignore.
+            <td style="padding:20px 24px;font-size:12px;color:#64748b;background:#f8fafc;text-align:center;" class="darkmode-footer">
+              <!-- In the footer section of all templates -->
+              <p style="margin:0 0 8px;">&copy; {{currentYear}} Vertex Capital. All rights reserved.</p>
+              <p style="margin:0;">Vertex Capital | <a href="https://vertexcapital.us" style="color:#0066cc;text-decoration:none;" class="darkmode-link">vertexcapital.us</a></p>
             </td>
           </tr>
         

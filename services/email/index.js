@@ -75,7 +75,7 @@ async function sendTemplatedEmail({ to, subject, template, variables, fromName }
   const htmlContent = compiled(variables);
 
   await transporter.sendMail({
-    from: `${fromName || process.env.MAIL_FROM_NAME || "Capital Connect"} <${process.env.MAIL_FROM || process.env.GMAIL_USER}>`,
+    from: `${fromName || process.env.MAIL_FROM_NAME || "Vertex Capital"} <${process.env.MAIL_FROM || process.env.GMAIL_USER}>`,
     to,
     subject,
     html: htmlContent,
@@ -88,6 +88,7 @@ async function sendTemplatedEmail({ to, subject, template, variables, fromName }
 function withDefaults(data) {
   return {
     logoUrl: process.env.LOGO_URL || "https://res.cloudinary.com/dnjvees9s/image/upload/v1756279067/1000068258-removebg-preview_momv17.png",
+    currentYear: new Date().getFullYear().toString(),
     ...data,
   };
 }
@@ -98,7 +99,7 @@ function withDefaults(data) {
 async function sendSignupEmail(data) {
   return sendTemplatedEmail({
     ...data,
-    subject: "Welcome to Capital Connect 🎉",
+    subject: "Welcome to Vertex Capital 🎉",
     template: "signup-capital-connect",
     variables: withDefaults(data),
   });
@@ -152,11 +153,12 @@ async function sendAccountSuspended(data) {
 async function sendLoginOtp(data) {
   return sendTemplatedEmail({
     ...data,
-    subject: "Your Capital Connect login code",
+    subject: "Your Vertex Capital login code",
     template: "login-otp",
     variables: withDefaults(data),
   });
 }
+
 async function sendAccountUnsuspended(data) {
   return sendTemplatedEmail({
     ...data,
@@ -182,9 +184,8 @@ module.exports = {
   sendProfitTopup,
   sendAccountUpgraded,
   sendAccountSuspended,
-  sendAccountUnsuspended,   // ✅ new
-  sendStatusChanged,        // ✅ new
+  sendAccountUnsuspended,
+  sendStatusChanged,
   sendLoginOtp,
   sendTemplatedEmail,
 };
-

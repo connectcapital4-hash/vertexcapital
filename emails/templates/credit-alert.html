@@ -1,45 +1,76 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Credit Alert — {{firmName}}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Credit Alert — Vertex Capital</title>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            .darkmode-bg { background: #1e293b !important; }
+            .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
+            .darkmode-text { color: #e2e8f0 !important; }
+            .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
+            .darkmode-highlight { background: #1e293b !important; border: 1px solid #334155 !important; }
+            .darkmode-highlight-text { color: #7bb2ff !important; }
+            .darkmode-link { color: #7bb2ff !important; }
+        }
+    </style>
 </head>
 <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 0;">
     <tr>
       <td text-align="center">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;">
-          
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;" class="darkmode-bg">
+
           <!-- Logo Section -->
           <tr>
-            <td text-align="center" style="padding:20px;background:#ffffff;">
-              <img src="{{logoUrl}}" alt="{{fallback firmName 'Capital Connect'}} Logo" style="max-width:150px;height:auto;" />
+            <td text-align="center" style="padding:20px;background:#ffffff;" class="darkmode-bg">
+              <img src="{{logoUrl}}" alt="Vertex Capital Logo" style="max-width:180px;height:auto;" />
             </td>
           </tr>
 
           <!-- Header -->
           <tr>
-            <td style="background:#0ea5e9;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
-              {{firmName}} — Credit Alert
+            <td style="background:#0066cc;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
+              Vertex Capital — Credit Alert
             </td>
           </tr>
           
           <!-- Body -->
           <tr>
-            <td style="padding:24px;line-height:1.6;">
-              <p style="margin:0 0 12px;">Hi {{fallback userName "there"}},</p>
-              <p style="margin:0 0 12px;">Your account has been credited by <b>{{firmName}}</b>.</p>
-              <p style="margin:0 0 12px;">Amount: <b>${{amount}}</b></p>
-              <p style="margin:0 0 12px;">New balance: <b>${{newBalance}}</b></p>
-              <p style="margin:16px 0 0;">Thank you for investing with {{firmName}}.</p>
+            <td style="padding:24px;line-height:1.6;background:#ffffff;" class="darkmode-content">
+              <p style="margin:0 0 16px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
+              <p style="margin:0 0 16px;" class="darkmode-text">Your account has been credited by <b>{{firmName}}</b>.</p>
+              
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:20px 0;">
+                <tr>
+                  <td text-align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="background:#f8fafc;padding:12px 20px;border-radius:8px;border:1px solid #e2e8f0;" class="darkmode-highlight">
+                      <tr>
+                        <td style="font-weight:600;padding-right:8px;" class="darkmode-text">Amount:</td>
+                        <td style="font-weight:700;color:#0066cc;" class="darkmode-highlight-text">${{amount}}</td>
+                      </tr>
+                      <tr><td colspan="2" style="height:8px;"></td></tr>
+                      <tr>
+                        <td style="font-weight:600;padding-right:8px;" class="darkmode-text">New Balance:</td>
+                        <td style="font-weight:700;color:#0066cc;" class="darkmode-highlight-text">${{newBalance}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin:16px 0 0;" class="darkmode-text">Thank you for investing with {{firmName}}.</p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:16px 24px;font-size:12px;color:#64748b;background:#f8fafc;">
-              This is an automated notification from Capital Connect.
+            <td style="padding:20px 24px;font-size:12px;color:#64748b;background:#f8fafc;text-align:center;" class="darkmode-footer">
+              <!-- In the footer section of all templates -->
+              <p style="margin:0 0 8px;">&copy; {{currentYear}} Vertex Capital. All rights reserved.</p>
+              <p style="margin:0;">Vertex Capital | <a href="https://vertexcapital.us" style="color:#0066cc;text-decoration:none;" class="darkmode-link">vertexcapital.us</a></p>
+              <p style="margin:16px 0 0;">This is an automated notification from Vertex Capital.</p>
             </td>
           </tr>
         

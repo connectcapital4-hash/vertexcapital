@@ -1,19 +1,18 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Account Status Changed — {{firmName}}</title>
-<style>
-  /* Dark mode media query for supported clients */
-  @media (prefers-color-scheme: dark) {
-    .darkmode-bg { background: #1e293b !important; }
-    .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
-    .darkmode-text { color: #e2e8f0 !important; }
-    .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
-    .darkmode-header { background: #f59e0b !important; color: #ffffff !important; }
-  }
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Account Status Changed — {{firmName}}</title>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            .darkmode-bg { background: #1e293b !important; }
+            .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
+            .darkmode-text { color: #e2e8f0 !important; }
+            .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
+            .darkmode-link { color: #7bb2ff !important; }
+        }
+    </style>
 </head>
 <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 0;">
@@ -24,31 +23,32 @@
           <!-- Logo Section -->
           <tr>
             <td text-align="center" style="padding:20px;background:#ffffff;" class="darkmode-bg">
-              <img src="{{logoUrl}}" alt="{{fallback firmName 'Vertex Capital'}} Logo" style="max-width:150px;height:auto;" />
+              <img src="{{logoUrl}}" alt="Vertex Capital Logo" style="max-width:180px;height:auto;" />
             </td>
           </tr>
 
           <!-- Header -->
           <tr>
-            <td style="background:#f59e0b;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;" class="darkmode-header">
-              {{firmName}} — Account Status Update
+            <td style="background:#f59e0b;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
+              Vertex Capital — Account Status Update
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="padding:24px;line-height:1.6;" class="darkmode-content">
-              <p style="margin:0 0 12px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
-              <p style="margin:0 0 12px;" class="darkmode-text">The status of your account has been changed by <b>{{firmName}}</b>.</p>
-              <p style="margin:0 0 12px;" class="darkmode-text">New status: <b>{{status}}</b></p>
-              <p style="margin:0 0 12px;" class="darkmode-text">If you have questions, please contact support.</p>
+            <td style="padding:24px;line-height:1.6;background:#ffffff;" class="darkmode-content">
+              <p style="margin:0 0 16px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
+              <p style="margin:0 0 16px;" class="darkmode-text">The status of your Vertex Capital account has been updated.</p>
+              <p style="margin:0 0 16px;" class="darkmode-text">New status: <b>{{status}}</b></p>
+              <p style="margin:16px 0 0;" class="darkmode-text">If you have questions, please contact our support team.</p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:16px 24px;font-size:12px;color:#64748b;background:#f8fafc;" class="darkmode-footer">
-              This is an automated notification from {{firmName}}.
+            <td style="padding:20px 24px;font-size:12px;color:#64748b;background:#f8fafc;text-align:center;" class="darkmode-footer">
+              <p style="margin:0 0 8px;">&copy; {{currentYear}} Vertex Capital. All rights reserved.</p>
+              <p style="margin:0;">Vertex Capital | <a href="https://vertexcapital.us" style="color:#0066cc;text-decoration:none;" class="darkmode-link">vertexcapital.us</a></p>
             </td>
           </tr>
 

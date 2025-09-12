@@ -1,19 +1,18 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Account Suspended — {{firmName}}</title>
-<style>
-  /* Dark mode media query for supported clients */
-  @media (prefers-color-scheme: dark) {
-    .darkmode-bg { background: #1e293b !important; }
-    .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
-    .darkmode-text { color: #e2e8f0 !important; }
-    .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
-    .darkmode-header { background: #ef4444 !important; color: #ffffff !important; }
-  }
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Account Suspended — {{firmName}}</title>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            .darkmode-bg { background: #1e293b !important; }
+            .darkmode-content { background: #1e293b !important; color: #e2e8f0 !important; }
+            .darkmode-text { color: #e2e8f0 !important; }
+            .darkmode-footer { background: #1e293b !important; color: #94a3b8 !important; }
+            .darkmode-link { color: #7bb2ff !important; }
+        }
+    </style>
 </head>
 <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 0;">
@@ -24,38 +23,39 @@
           <!-- Logo Section -->
           <tr>
             <td text-align="center" style="padding:20px;background:#ffffff;" class="darkmode-bg">
-              <img src="{{logoUrl}}" alt="{{fallback firmName 'Vertex Capital'}} Logo" style="max-width:150px;height:auto;" />
+              <img src="{{logoUrl}}" alt="Vertex Capital Logo" style="max-width:180px;height:auto;" />
             </td>
           </tr>
 
           <!-- Header -->
           <tr>
-            <td style="background:#ef4444;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;" class="darkmode-header">
-              {{firmName}} — Account Suspended
+            <td style="background:#ef4444;padding:18px 24px;color:#ffffff;font-size:18px;font-weight:700;text-align:center;">
+              Vertex Capital — Account Suspended
             </td>
           </tr>
           
           <!-- Body -->
           <tr>
-            <td style="padding:24px;line-height:1.6;" class="darkmode-content">
-              <p style="margin:0 0 12px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
-              <p style="margin:0 0 12px;" class="darkmode-text">Your <b>{{firmName}}</b> account has been <b>suspended</b>.</p>
+            <td style="padding:24px;line-height:1.6;background:#ffffff;" class="darkmode-content">
+              <p style="margin:0 0 16px;" class="darkmode-text">Hi {{fallback userName "there"}},</p>
+              <p style="margin:0 0 16px;" class="darkmode-text">Your <b>Vertex Capital</b> account has been <b>suspended</b>.</p>
               {{#if reason}}
-                <p style="margin:0 0 12px;" class="darkmode-text">Reason: <i>{{reason}}</i></p>
+                <p style="margin:0 0 16px;" class="darkmode-text">Reason: <i>{{reason}}</i></p>
               {{/if}}
               <p style="margin:16px 0 0;" class="darkmode-text">
                 Withdraw requests will be disabled until your account is reactivated.
+                Please contact support if you believe this is an error.
               </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:16px 24px;font-size:12px;color:#64748b;background:#f8fafc;" class="darkmode-footer">
-              If you believe this is a mistake, please contact your firm's admin.
+            <td style="padding:20px 24px;font-size:12px;color:#64748b;background:#f8fafc;text-align:center;" class="darkmode-footer">
+              <p style="margin:0 0 8px;">&copy; {{currentYear}} Vertex Capital. All rights reserved.</p>
+              <p style="margin:0;">Vertex Capital | <a href="https://vertexcapital.us" style="color:#0066cc;text-decoration:none;" class="darkmode-link">vertexcapital.us</a></p>
             </td>
           </tr>
-        
         </table>
       </td>
     </tr>
