@@ -252,3 +252,37 @@ exports.getFirmCryptoAddresses = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Fetch firm by ID
+exports.getFirmById = async (req, res) => {
+  try {
+    const { firmId } = req.params;
+    const firm = await adminService.getFirmById(firmId);
+    res.json(firm);
+  } catch (err) {
+    res.status(404).json({ error: err.message });
+  }
+};
+
+// Fetch users under a firm
+exports.getUsersByFirm = async (req, res) => {
+  try {
+    const { firmId } = req.params;
+    const result = await adminService.getUsersByFirm(firmId);
+    res.json(result);
+  } catch (err) {
+    res.status(404).json({ error: err.message });
+  }
+};
+
+// Fetch news created by firm's admin
+exports.getFirmNews = async (req, res) => {
+  try {
+    const { firmId } = req.params;
+    const result = await adminService.getFirmNews(firmId);
+    res.json(result);
+  } catch (err) {
+    res.status(404).json({ error: err.message });
+  }
+};
+

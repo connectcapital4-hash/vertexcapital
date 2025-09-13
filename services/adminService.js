@@ -266,3 +266,36 @@ exports.editNews = async (newsId, data, file) => {
   await news.save();
   return news;
 };
+// Get firm by ID
+exports.getFirmById = async (firmId) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+  return firm;
+};
+
+// Get users under a firm
+exports.getUsersByFirm = async (firmId) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+
+  const users = await User.findAll({
+    where: { firm_id: firmId },
+    attributes: ["id", "name", "email", "status", "balance", "account_level", "created_at"]
+  });
+
+  return { firm, users };
+};
+
+// Get news created by firm's admin
+exports.getFirmNews = async (firmId) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+
+  const news = await News.findAll({
+    where: { published_by: firm.admin_id },
+    order: [["created_at", "DESC"]],
+    attributes: ["id", "title", "body", "image_url", "link", "created_at"]
+  });
+
+  return { firm, news };
+};

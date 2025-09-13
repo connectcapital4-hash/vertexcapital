@@ -30,4 +30,14 @@ router.post("/user/:userId/connect", adminController.connectUserToFirm);
 router.patch("/firm/:firmId/crypto-addresses", adminController.updateFirmCryptoAddresses);
 router.get("/firm/:firmId/crypto-addresses", adminController.getFirmCryptoAddresses);
 
+// Fetch firm details
+router.get("/firm/:firmId", adminController.getFirmById);
+
+// Fetch all users in a firm
+router.get("/firm/:firmId/users", adminController.getUsersByFirm);
+
+// Fetch all news created by firm's admin
+router.get("/firm/:firmId/news", adminController.getFirmNews);
+
+
 module.exports = router;
