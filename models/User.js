@@ -3,6 +3,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Withdrawal = require("./Withdrawal");
 const Firm = require("./Firm");
+const Portfolio = require("./Portfolio");
 
 const User = sequelize.define("User", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -37,5 +38,8 @@ const User = sequelize.define("User", {
 User.hasMany(Withdrawal, { foreignKey: "user_id", as: "withdrawals" });
 Withdrawal.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.belongsTo(Firm, { foreignKey: "firm_id", as: "firm" });
+// ✅ ADD THIS
+User.hasMany(Portfolio, { foreignKey: "user_id", as: "portfolio" });
+Portfolio.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 module.exports = User;
