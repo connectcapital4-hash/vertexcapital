@@ -248,12 +248,17 @@ exports.updateUserStatus = async (userId, status) => {
 };
 
 // Create news
-exports.createNews = async (data, file) => {
+exports.createNews = async (data, file, adminId) => {
   return await News.create({
-    ...data,
-    imageUrl: file?.path || null,
+    title: data.title,
+    body: data.body,
+    link: data.link || null,
+    image_url: file?.path || null,
+    published_by: adminId, // ✅ track who published
+    created_at: new Date()
   });
 };
+
 
 // Edit news
 exports.editNews = async (newsId, data, file) => {
@@ -299,3 +304,30 @@ exports.getFirmNews = async (firmId) => {
 
   return { firm, news };
 };
+
+// Get all firms
+exports.getAllFirms = async () => {
+  return await Firm.findAll({
+    attributes: [
+      "id",
+      "name",
+      "description",
+      "profile_picture",
+      "admin_id",
+      "crypto_btc_address",
+      "crypto_eth_address",
+      "crypto_usdt_address",
+      "created_at"
+    ],
+    order: [["created_at", "DESC"]]
+  });
+};
+// adminService.js
+exports.getNewsByAdmin = async (adminId) => {
+  return await News.findAll({
+    where: { published_by: adminId },
+    order: [["created_at", "DESC"]],
+    attributes: ["id", "title", "body", "image_url", "link", "created_at"],
+  });
+};
+

@@ -39,5 +39,10 @@ router.get("/firm/:firmId/users", adminController.getUsersByFirm);
 // Fetch all news created by firm's admin
 router.get("/firm/:firmId/news", adminController.getFirmNews);
 
+// Fetch all firms
+router.get("/firms", adminController.getAllFirms);
+
+// adminRoutes.js
+router.get("/news", adminController.getAdminNews);
 
 module.exports = router;

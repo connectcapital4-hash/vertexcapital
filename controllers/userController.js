@@ -138,7 +138,6 @@ exports.register = async (req, res) => {
 };
 
 // 🔹 Get current logged-in user
-// controllers/userController.js
 exports.me = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
@@ -154,9 +153,14 @@ exports.me = async (req, res) => {
       ],
       include: [
         {
-          model: require("../models/Portfolio"), // if you have one
+          model: Firm, // ✅ Include firm details
+          as: "firm",
+          attributes: ["id", "name", "description", "profile_picture"], // you can add crypto addresses if needed
+        },
+        {
+          model: require("../models/Portfolio"),
           as: "portfolio",
-          attributes: ["asset_name", "asset_symbol","quantity","profit_loss", "assigned_value"],
+          attributes: ["asset_name", "asset_symbol", "quantity", "profit_loss", "assigned_value"],
         },
         {
           model: require("../models/Withdrawal"),

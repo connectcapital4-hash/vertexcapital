@@ -165,12 +165,13 @@ exports.updateUserStatus = async (req, res) => {
 // Write news
 exports.createNews = async (req, res) => {
   try {
-    const news = await adminService.createNews(req.body, req.file);
+    const news = await adminService.createNews(req.body, req.file, req.admin.id);
     res.json(news);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Edit news
 exports.editNews = async (req, res) => {
@@ -283,6 +284,26 @@ exports.getFirmNews = async (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(404).json({ error: err.message });
+  }
+};
+
+// Fetch all firms
+exports.getAllFirms = async (req, res) => {
+  try {
+    const firms = await adminService.getAllFirms();
+    res.json(firms);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// adminController.js
+exports.getAdminNews = async (req, res) => {
+  try {
+    const news = await adminService.getNewsByAdmin(req.admin.id);
+    res.json(news);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 

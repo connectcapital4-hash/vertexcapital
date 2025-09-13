@@ -2,6 +2,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Withdrawal = require("./Withdrawal");
+const Firm = require("./Firm");
 
 const User = sequelize.define("User", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -35,5 +36,6 @@ const User = sequelize.define("User", {
 // In your User model or association file
 User.hasMany(Withdrawal, { foreignKey: "user_id", as: "withdrawals" });
 Withdrawal.belongsTo(User, { foreignKey: "user_id", as: "user" });
+User.belongsTo(Firm, { foreignKey: "firm_id", as: "firm" });
 
 module.exports = User;
