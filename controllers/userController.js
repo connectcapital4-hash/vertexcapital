@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { sendSignupEmail, sendLoginOtp, sendFirmConnectOtp } = require("../services/email");
+const { sendSignupEmail, sendLoginOtp, sendPasswordResetOtp,sendPasswordResetSuccess, sendFirmConnectOtp } = require("../services/email");
 const Firm = require("../models/Firm");
 
 
@@ -260,6 +260,79 @@ exports.verifyFirmConnect = async (req, res) => {
     return res.json({ message: "Firm connection successful", connected: true });
   } catch (err) {
     return res.status(500).json({ message: "OTP verification failed", error: err.message });
+  }
+};
+
+// 🔹 Request password reset (send OTP)
+exports.requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    // Optional: Throttle requests (max 5 per hour)
+    if (user.otp_expiry && Date.now() < new Date(user.otp_expiry).getTime()) {
+      return res.status(429).json({ message: "Please wait before requesting another OTP." });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min validity
+    await user.save();
+
+    // Send password reset OTP email
+    try {
+      await sendPasswordResetOtp({ to: user.email, name: user.name, otp });
+      console.log(`📧 Password reset OTP sent to ${user.email}`);
+    } catch (mailErr) {
+      console.error("❌ Password reset email failed:", mailErr.message);
+    }
+
+    return res.json({ message: "OTP sent to email" });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to request password reset", error: err.message });
+  }
+};
+
+// 🔹 Reset password with OTP
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    if (!user.otp || !user.otp_expiry) {
+      return res.status(400).json({ message: "No OTP generated. Please request again." });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (Date.now() > new Date(user.otp_expiry).getTime()) {
+      return res.status(400).json({ message: "OTP expired. Please request again." });
+    }
+
+    // Hash new password
+    user.password_hash = await bcrypt.hash(newPassword, 10);
+    user.otp = null;
+    user.otp_expiry = null;
+    await user.save();
+
+    // Send confirmation email
+    try {
+      await sendPasswordResetSuccess({ to: user.email, name: user.name });
+      console.log(`✅ Password reset confirmation sent to ${user.email}`);
+    } catch (mailErr) {
+      console.error("❌ Password reset success email failed:", mailErr.message);
+    }
+
+    return res.json({ message: "Password reset successful" });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to reset password", error: err.message });
   }
 };
 

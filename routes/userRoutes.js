@@ -16,5 +16,10 @@ router.put("/profile-picture", authUser, userController.updateProfilePicture);
 router.post("/request-firm-connect", userController.requestFirmConnect);
 router.post("/verify-firm-connect", userController.verifyFirmConnect);
 
+// Password reset flow
+router.post("/request-password-reset", userController.requestPasswordReset);
+router.post("/reset-password", userController.resetPassword);
+
+
 
 module.exports = router;

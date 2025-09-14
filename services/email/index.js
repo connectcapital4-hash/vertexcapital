@@ -176,6 +176,23 @@ async function sendStatusChanged(data) {
     variables: withDefaults(data),
   });
 }
+async function sendPasswordResetOtp(data) {
+  return sendTemplatedEmail({
+    ...data,
+    subject: "Password Reset Code — Vertex Capital",
+    template: "password-reset-otp",
+    variables: withDefaults(data),
+  });
+}
+
+async function sendPasswordResetSuccess(data) {
+  return sendTemplatedEmail({
+    ...data,
+    subject: "Password Reset Successful ✅",
+    template: "password-reset-success",
+    variables: withDefaults(data),
+  });
+}
 
 module.exports = {
   sendSignupEmail,
@@ -187,5 +204,7 @@ module.exports = {
   sendAccountUnsuspended,
   sendStatusChanged,
   sendLoginOtp,
+  sendPasswordResetOtp,     // <-- ADD THIS
+  sendPasswordResetSuccess, // <-- ADD THIS
   sendTemplatedEmail,
 };
