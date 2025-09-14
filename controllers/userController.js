@@ -263,7 +263,8 @@ exports.verifyFirmConnect = async (req, res) => {
   }
 };
 
-// 🔹 Request password reset (send OTP)
+
+// 🔹 Request password reset (send OTP) with proper rate limiting
 exports.requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
@@ -271,18 +272,32 @@ exports.requestPasswordReset = async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    // Optional: Throttle requests (max 5 per hour)
-    if (user.otp_expiry && Date.now() < new Date(user.otp_expiry).getTime()) {
-      return res.status(429).json({ message: "Please wait before requesting another OTP." });
+    const now = Date.now();
+
+    // Initialize if missing
+    if (!user.otp_request_count) user.otp_request_count = 0;
+    if (!user.otp_request_reset_time) user.otp_request_reset_time = new Date(now);
+
+    // Check if we are still in cooldown window
+    if (now < new Date(user.otp_request_reset_time).getTime()) {
+      if (user.otp_request_count >= 5) {
+        return res.status(429).json({ message: "Too many OTP requests. Please try again in an hour." });
+      }
+    } else {
+      // Window expired → reset counter & set new 1-hour window
+      user.otp_request_count = 0;
+      user.otp_request_reset_time = new Date(now + 60 * 60 * 1000);
     }
 
-    // Generate OTP
+    // Increment request count
+    user.otp_request_count += 1;
+
+    // Generate and save OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.otp = otp;
-    user.otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min validity
+    user.otp_expiry = new Date(now + 10 * 60 * 1000); // valid for 10 mins
     await user.save();
 
-    // Send password reset OTP email
     try {
       await sendPasswordResetOtp({ to: user.email, name: user.name, otp });
       console.log(`📧 Password reset OTP sent to ${user.email}`);

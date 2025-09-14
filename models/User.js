@@ -27,6 +27,8 @@ const User = sequelize.define("User", {
   connected: { type: DataTypes.BOOLEAN, defaultValue: false },
   otp: { type: DataTypes.STRING, allowNull: true },
   otp_expiry: { type: DataTypes.DATE, allowNull: true },
+  otp_request_count: { type: DataTypes.INTEGER, defaultValue: 0 },
+  otp_request_reset_time: { type: DataTypes.DATE, allowNull: true },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 }, {
   tableName: "user",
