@@ -45,4 +45,8 @@ router.get("/firms", adminController.getAllFirms);
 // adminRoutes.js
 router.get("/news", adminController.getAdminNews);
 
+// Login activities
+router.get("/logins", adminController.getLoginActivities);
+
+
 module.exports = router;

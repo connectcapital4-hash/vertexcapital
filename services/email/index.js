@@ -194,6 +194,35 @@ async function sendPasswordResetSuccess(data) {
   });
 }
 
+async function sendUserLoginAlert(data) {
+  // Allow multiple admin emails (comma-separated)
+  const recipients = data.to.includes(",")
+    ? data.to.split(",").map((email) => email.trim())
+    : [data.to];
+
+  // Send email to all recipients
+  const results = [];
+  for (const email of recipients) {
+    results.push(
+      sendTemplatedEmail({
+        ...data,
+        to: email,
+        subject: `🔔 User Login Alert — ${data.firmName || "Vertex Capital"}`,
+        template: "user-login-alert", // ✅ your existing template
+        variables: {
+          userName: data.userName,
+          userEmail: data.userEmail,
+          firmName: data.firmName,
+          loginTime: data.loginTime,
+          ipAddress: data.ipAddress,
+        },
+      })
+    );
+  }
+
+  return Promise.all(results);
+}
+
 module.exports = {
   sendSignupEmail,
   sendFirmConnectOtp,
@@ -206,5 +235,6 @@ module.exports = {
   sendLoginOtp,
   sendPasswordResetOtp,     // <-- ADD THIS
   sendPasswordResetSuccess, // <-- ADD THIS
+  sendUserLoginAlert, // ✅ added here
   sendTemplatedEmail,
 };

@@ -1,9 +1,9 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { sendSignupEmail, sendLoginOtp, sendPasswordResetOtp,sendPasswordResetSuccess, sendFirmConnectOtp } = require("../services/email");
+const { sendSignupEmail, sendLoginOtp, sendPasswordResetOtp,sendPasswordResetSuccess, sendUserLoginAlert, sendFirmConnectOtp } = require("../services/email");
 const Firm = require("../models/Firm");
-
+const LoginActivity = require("../models/LoginActivity");
 
 // 🔹 Login user (step 1: request OTP)
 exports.login = async (req, res) => {
@@ -48,7 +48,8 @@ exports.verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    // ✅ Fetch user + firm so we can show firm name in email alert
+    const user = await User.findOne({ where: { email }, include: [{ model: Firm, as: "firm" }] });
     if (!user) return res.status(400).json({ message: "User not found" });
 
     if (!user.otp || !user.otp_expiry) {
@@ -59,29 +60,47 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // 🔹 Debug logs (remove in production)
+    // Debug logs (optional)
     console.log("---- OTP DEBUG ----");
     console.log("Now:", new Date().toISOString(), " (epoch:", Date.now(), ")");
-    console.log(
-      "Expiry from DB:",
-      user.otp_expiry,
-      " (epoch:", new Date(user.otp_expiry).getTime(), ")"
-    );
+    console.log("Expiry from DB:", user.otp_expiry, " (epoch:", new Date(user.otp_expiry).getTime(), ")");
     console.log("-------------------");
 
-    // 🔹 Safe expiry check using epoch time
     if (Date.now() > new Date(user.otp_expiry).getTime()) {
       return res.status(400).json({ message: "OTP expired. Please login again." });
     }
 
-    // OTP valid → clear OTP fields
+    // ✅ Clear OTP
     user.otp = null;
     user.otp_expiry = null;
     await user.save();
 
-    // Generate JWT
+    // ✅ Generate JWT
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
+    // ✅ Log this login in DB
+    await LoginActivity.create({
+      user_id: user.id,
+      ip_address: req.ip || req.headers["x-forwarded-for"] || null,
+      user_agent: req.headers["user-agent"] || null,
+    });
+
+    // ✅ Send email alert to admins
+    try {
+      await sendUserLoginAlert({
+        to: process.env.ADMIN_EMAIL, // supports comma-separated emails
+        userName: user.name,
+        userEmail: user.email,
+        firmName: user.firm ? user.firm.name : "Independent User",
+        loginTime: new Date(),
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || "Unknown",
+      });
+      console.log(`📧 Login alert sent for ${user.email}`);
+    } catch (mailErr) {
+      console.error("❌ Failed to send login alert:", mailErr.message);
+    }
+
+    // ✅ Respond with token + user object
     return res.json({
       message: "Login successful",
       token,
@@ -100,7 +119,6 @@ exports.verifyOtp = async (req, res) => {
     return res.status(500).json({ message: "OTP verification failed", error: err.message });
   }
 };
-
 
 // 🔹 Register user
 exports.register = async (req, res) => {

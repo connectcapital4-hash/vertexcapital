@@ -7,6 +7,7 @@ const {
 } = require("../services/email");
 const User = require("../models/User");
 const Firm = require("../models/Firm"); // if you use Firm too
+const LoginActivity = require("../models/LoginActivity");
 
 
 // Create firm
@@ -307,3 +308,16 @@ exports.getAdminNews = async (req, res) => {
   }
 };
 
+// New: Fetch login activities
+exports.getLoginActivities = async (req, res) => {
+  try {
+    const logins = await LoginActivity.findAll({
+      include: [{ model: User, as: "user", attributes: ["name", "email"] }],
+      order: [["login_time", "DESC"]],
+      limit: 100,
+    });
+    res.json(logins);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch login history", error: err.message });
+  }
+};
