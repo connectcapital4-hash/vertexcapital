@@ -34,6 +34,8 @@ const { authMiddleware } = require("./middleware/auth");
 const userRoutes = require("./routes/userRoutes");
 const withdrawalRoutes = require("./routes/withdrawalRoutes");
 const automationService = require("./services/automationService");
+const portfolioRoutes = require("./routes/portfolioRoutes");
+
 
 // ✅ Protected admin routes
 app.use(
@@ -49,6 +51,8 @@ app.use("/api/crypto", cryptoRoutes);
 app.use("/api/stocks", stockRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/withdrawals", withdrawalRoutes);
+app.use("/api/portfolio", portfolioRoutes);
+
 
 // ✅ Health route (for uptime monitoring)
 app.get("/health", (req, res) => res.status(200).send("OK"));
