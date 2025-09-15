@@ -7,6 +7,9 @@ require("dotenv").config();
 
 const app = express();
 
+// ✅ Trust proxy so req.ip uses x-forwarded-for if behind a proxy
+app.set("trust proxy", true);
+
 // ✅ Global error/crash handlers (prevents silent crashes)
 process.on("unhandledRejection", (reason, promise) => {
   console.error("🔥 Unhandled Rejection at:", promise, "reason:", reason);

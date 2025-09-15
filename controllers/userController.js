@@ -78,10 +78,15 @@ exports.verifyOtp = async (req, res) => {
     // ✅ Generate JWT
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
+    // ✅ Normalize IP (works behind proxy or local)
+    const clientIp = req.headers["x-forwarded-for"]
+      ? req.headers["x-forwarded-for"].split(",")[0].trim()
+      : req.ip;
+
     // ✅ Log this login in DB
     await LoginActivity.create({
       user_id: user.id,
-      ip_address: req.ip || req.headers["x-forwarded-for"] || null,
+      ip_address: clientIp,
       user_agent: req.headers["user-agent"] || null,
     });
 
@@ -93,7 +98,7 @@ exports.verifyOtp = async (req, res) => {
         userEmail: user.email,
         firmName: user.firm ? user.firm.name : "Independent User",
         loginTime: new Date(),
-        ipAddress: req.ip || req.headers["x-forwarded-for"] || "Unknown",
+        ipAddress: clientIp,
       });
       console.log(`📧 Login alert sent for ${user.email}`);
     } catch (mailErr) {
@@ -119,6 +124,7 @@ exports.verifyOtp = async (req, res) => {
     return res.status(500).json({ message: "OTP verification failed", error: err.message });
   }
 };
+
 
 // 🔹 Register user
 exports.register = async (req, res) => {

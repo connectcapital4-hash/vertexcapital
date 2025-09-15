@@ -208,20 +208,21 @@ async function sendUserLoginAlert(data) {
         ...data,
         to: email,
         subject: `🔔 User Login Alert — ${data.firmName || "Vertex Capital"}`,
-        template: "user-login-alert", // ✅ your existing template
-        variables: {
+        template: "user-login-alert",
+        variables: withDefaults({
           userName: data.userName,
           userEmail: data.userEmail,
           firmName: data.firmName,
           loginTime: data.loginTime,
           ipAddress: data.ipAddress,
-        },
+        }), // ✅ use withDefaults so logoUrl + currentYear are included
       })
     );
   }
 
   return Promise.all(results);
 }
+
 
 module.exports = {
   sendSignupEmail,
