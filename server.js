@@ -35,6 +35,8 @@ const userRoutes = require("./routes/userRoutes");
 const withdrawalRoutes = require("./routes/withdrawalRoutes");
 const automationService = require("./services/automationService");
 const portfolioRoutes = require("./routes/portfolioRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+
 
 
 // ✅ Protected admin routes
@@ -52,6 +54,8 @@ app.use("/api/stocks", stockRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/withdrawals", withdrawalRoutes);
 app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/payments", paymentRoutes);
+
 
 
 // ✅ Health route (for uptime monitoring)
