@@ -5,8 +5,13 @@ const withdrawalController = require("../controllers/withdrawalController");
 const { authUser } = require("../middleware/authUser");
 const { authMiddleware } = require("../middleware/auth");
 
+router.get("/ping", (req, res) => {
+  res.json({ message: "✅ Withdrawal routes mounted" });
+});
+
+
 // User routes
-router.post("/request",withdrawalController.requestWithdrawal);
+router.post("/request",authUser, withdrawalController.requestWithdrawal);
 router.get("/history", authUser, withdrawalController.getUserWithdrawals);
 
 // Admin routes

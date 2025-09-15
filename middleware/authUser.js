@@ -1,4 +1,4 @@
-// middleware/auth.js
+// middleware/authUser.js
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // ✅ lowercase import
 
@@ -9,7 +9,18 @@ exports.authUser = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // 🔑 Debug log to confirm token payload (only in dev)
+    if (process.env.NODE_ENV !== "production") {
+      console.log("🔑 Decoded user token:", decoded);
+    }
+
+    // ✅ Ensure token contains an id (critical for withdrawals)
+    if (!decoded.id) {
+      return res.status(401).json({ message: "Invalid token payload: missing user id" });
+    }
+
     const user = await User.findByPk(decoded.id);
+
     if (!user) return res.status(401).json({ message: "Invalid token" });
 
     req.user = user; // attach full user object
