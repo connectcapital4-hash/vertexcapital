@@ -6,7 +6,7 @@ const { authUser } = require("../middleware/authUser");
 const { authMiddleware } = require("../middleware/auth");
 
 // User routes
-router.post("/request", authUser, withdrawalController.requestWithdrawal);
+router.post("/request",withdrawalController.requestWithdrawal);
 router.get("/history", authUser, withdrawalController.getUserWithdrawals);
 
 // Admin routes
