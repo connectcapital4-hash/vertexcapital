@@ -223,7 +223,6 @@ async function sendUserLoginAlert(data) {
   return Promise.all(results);
 }
 
-
 module.exports = {
   sendSignupEmail,
   sendFirmConnectOtp,
