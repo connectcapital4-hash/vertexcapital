@@ -5,6 +5,14 @@ const { sendSignupEmail, sendLoginOtp, sendPasswordResetOtp,sendPasswordResetSuc
 const Firm = require("../models/Firm");
 const LoginActivity = require("../models/LoginActivity");
 
+const { Op } = require("sequelize");
+const stockService = require("../services/stockService");
+const axios = require("axios");
+require("dotenv").config();
+
+const FINNHUB_API = "https://finnhub.io/api/v1";
+const API_KEY = process.env.FINNHUB_API_KEY;
+
 // 🔹 Login user (step 1: request OTP)
 exports.login = async (req, res) => {
   try {
@@ -124,7 +132,6 @@ exports.verifyOtp = async (req, res) => {
     return res.status(500).json({ message: "OTP verification failed", error: err.message });
   }
 };
-
 
 // 🔹 Register user
 exports.register = async (req, res) => {
@@ -372,6 +379,75 @@ exports.resetPassword = async (req, res) => {
     return res.json({ message: "Password reset successful" });
   } catch (err) {
     return res.status(500).json({ message: "Failed to reset password", error: err.message });
+  }
+};
+
+// 🔹 Search Firms (local DB + Stock API fallback)
+exports.searchFirms = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({ message: "Search query must be at least 2 characters" });
+    }
+
+    // 1️⃣ Search local firms in DB
+    const localFirms = await Firm.findAll({
+      where: {
+        name: { [Op.iLike]: `%${q}%` } // case-insensitive partial match
+      },
+      attributes: ["id", "name", "description", "profile_picture"]
+    });
+
+    let results = localFirms.map(f => ({
+      id: f.id,
+      name: f.name,
+      description: f.description,
+      profile_picture: f.profile_picture,
+      source: "local"
+    }));
+
+    // 2️⃣ If few local results, also fetch from Finnhub stock search
+    if (results.length < 5) {
+      const searchRes = await axios.get(`${FINNHUB_API}/search?q=${q}&token=${API_KEY}`);
+      const matches = searchRes.data.result || [];
+
+      // For each symbol, get full profile
+      const stockProfiles = await Promise.all(
+        matches.slice(0, 5).map(async (m) => {
+          try {
+            const profileRes = await axios.get(
+              `${FINNHUB_API}/stock/profile2?symbol=${m.symbol}&token=${API_KEY}`
+            );
+            const p = profileRes.data;
+            if (!p || !p.name) return null;
+
+            return {
+              id: null,
+              name: p.name,
+              description: p.finnhubIndustry || "No description available",
+              profile_picture: p.logo,
+              ticker: p.ticker,
+              source: "stock"
+            };
+          } catch (err) {
+            return null;
+          }
+        })
+      );
+
+      results = results.concat(stockProfiles.filter(Boolean));
+    }
+
+    // 3️⃣ Return merged results (unique by name)
+    const uniqueResults = results.reduce((acc, curr) => {
+      if (!acc.find(r => r.name === curr.name)) acc.push(curr);
+      return acc;
+    }, []);
+
+    return res.json({ firms: uniqueResults });
+  } catch (err) {
+    console.error("❌ Firm search failed:", err.message);
+    return res.status(500).json({ message: "Firm search failed", error: err.message });
   }
 };
 

@@ -20,6 +20,10 @@ router.post("/verify-firm-connect", userController.verifyFirmConnect);
 router.post("/request-password-reset", userController.requestPasswordReset);
 router.post("/reset-password", userController.resetPassword);
 
+// userRoutes.js search firms
+router.get("/search-firms", userController.searchFirms);
+
+
 
 
 module.exports = router;
