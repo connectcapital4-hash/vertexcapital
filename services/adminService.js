@@ -331,3 +331,35 @@ exports.getNewsByAdmin = async (adminId) => {
   });
 };
 
+// Delete user
+exports.deleteUser = async (userId) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error("User not found");
+
+  // Optional: also delete their portfolios, transactions, payments, withdrawals
+  await Portfolio.destroy({ where: { user_id: userId } });
+  await Transaction.destroy({ where: { user_id: userId } });
+  await Payment.destroy({ where: { user_id: userId } });
+  await Withdrawal.destroy({ where: { user_id: userId } });
+
+  await user.destroy();
+  return { message: `User ${userId} deleted successfully` };
+};
+
+// Delete firm
+exports.deleteFirm = async (firmId) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+
+  // Remove all users under this firm (optional: cascade delete)
+  const users = await User.findAll({ where: { firm_id: firmId } });
+  for (const user of users) {
+    await exports.deleteUser(user.id);
+  }
+
+  await firm.destroy();
+  return { message: `Firm ${firmId} deleted successfully` };
+};
+
+
+

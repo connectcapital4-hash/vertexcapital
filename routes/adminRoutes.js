@@ -48,5 +48,11 @@ router.get("/news", adminController.getAdminNews);
 // Login activities
 router.get("/logins", adminController.getLoginActivities);
 
+router.delete("/user/:userId", adminController.deleteUser);
+
+router.delete("/firm/:firmId", adminController.deleteFirm);
+
+
+
 
 module.exports = router;

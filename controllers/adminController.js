@@ -321,3 +321,27 @@ exports.getLoginActivities = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch login history", error: err.message });
   }
 };
+
+// Delete user
+exports.deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await adminService.deleteUser(userId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Delete firm
+exports.deleteFirm = async (req, res) => {
+  try {
+    const { firmId } = req.params;
+    const result = await adminService.deleteFirm(firmId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+
