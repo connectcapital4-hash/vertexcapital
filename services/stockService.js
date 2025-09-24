@@ -105,26 +105,33 @@ async function getIndicators(symbol, token) {
 }
 
 // ✅ Get top stocks (static list for now)
+// ✅ Get top stocks (with profile + price)
 async function getTopStocks(token) {
   const tickers = ["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA"];
   const results = [];
 
   for (let t of tickers) {
-    const response = await axios.get(
-      `https://finnhub.io/api/v1/quote?symbol=${t}&token=${token}`
-    );
+    const [quoteRes, profileRes] = await Promise.all([
+      axios.get(`https://finnhub.io/api/v1/quote?symbol=${t}&token=${token}`),
+      axios.get(`https://finnhub.io/api/v1/stock/profile2?symbol=${t}&token=${token}`)
+    ]);
+
     results.push({
       symbol: t,
-      current: response.data.c,
-      high: response.data.h,
-      low: response.data.l,
-      open: response.data.o,
-      prevClose: response.data.pc,
+      name: profileRes.data.name,
+      logo: profileRes.data.logo, // ✅ company logo / icon
+      exchange: profileRes.data.exchange,
+      current: quoteRes.data.c,
+      high: quoteRes.data.h,
+      low: quoteRes.data.l,
+      open: quoteRes.data.o,
+      prevClose: quoteRes.data.pc,
     });
   }
 
   return results;
 }
+
 
 // ✅ Search stock by keyword
 async function searchStock(query, token) {
