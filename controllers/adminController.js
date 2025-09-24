@@ -344,4 +344,15 @@ exports.deleteFirm = async (req, res) => {
   }
 };
 
+// Fetch users under a firm
+exports.getUsersByFirm = async (req, res) => {
+  try {
+    const { firmId } = req.params;
+    const result = await adminService.getUsersByFirm(firmId);
+    res.json(result);
+  } catch (err) {
+    res.status(404).json({ error: err.message });
+  }
+};
+
 

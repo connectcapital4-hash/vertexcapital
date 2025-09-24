@@ -361,5 +361,20 @@ exports.deleteFirm = async (firmId) => {
   return { message: `Firm ${firmId} deleted successfully` };
 };
 
+// Fetch all users connected to a firm
+exports.getUsersByFirm = async (firmId) => {
+  const firm = await Firm.findByPk(firmId);
+  if (!firm) throw new Error("Firm not found");
+
+  // Find only connected users
+  const users = await User.findAll({
+    where: { firm_id: firmId, connected: true }, 
+    attributes: ["id", "name", "email", "status", "balance", "account_level", "created_at"]
+  });
+
+  return { firm, users };
+};
+
+
 
 
