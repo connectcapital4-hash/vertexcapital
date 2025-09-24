@@ -25,4 +25,8 @@ router.get('/:symbol/market', cryptoController.getMarket);
 // Price (last so it doesn’t catch above routes)
 router.get('/:symbol', cryptoController.getPrice);
 
+// Top coins
+router.get('/top/list', cryptoController.getTopCoins);
+
+
 module.exports = router;

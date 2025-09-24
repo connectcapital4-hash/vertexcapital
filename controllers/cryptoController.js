@@ -125,6 +125,23 @@ async function searchCrypto(req, res) {
   }
 }
 
+// ✅ Get top coins
+async function getTopCoins(req, res) {
+  try {
+    const cacheKey = `crypto-top-coins`;
+    const cached = await cache.getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    const data = await cryptoService.getTopCoins();
+    await cache.setCache(cacheKey, data, TTL * 2); // cache for 2 min
+    res.json(data);
+  } catch (err) {
+    console.error('Crypto error (top coins):', err.message);
+    res.status(500).json({ error: 'Failed to fetch top coins' });
+  }
+}
+
+
 module.exports = { 
   getPrice, 
   getMarket, 
@@ -132,5 +149,6 @@ module.exports = {
   getTrending, 
   getExchanges, 
   getLogo,
-  searchCrypto
+  searchCrypto,
+  getTopCoins   // <-- new
 };

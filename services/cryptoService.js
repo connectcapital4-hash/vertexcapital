@@ -77,6 +77,30 @@ async function searchCrypto(query) {
   }));
 }
 
+// ✅ Get top selected coins (BTC, ETH, BNB, USDT, XRP)
+async function getTopCoins() {
+  const response = await axios.get(`${BASE_URL}/coins/markets`, {
+    params: {
+      vs_currency: 'usd',
+      ids: 'bitcoin,ethereum,binancecoin,tether,ripple', // top coins
+      order: 'market_cap_desc',
+      per_page: 5,
+      page: 1,
+      sparkline: false
+    }
+  });
+
+  return response.data.map(c => ({
+    id: c.id,
+    name: c.name,
+    symbol: c.symbol,
+    price: c.current_price,
+    logo: c.image,
+    market_cap_rank: c.market_cap_rank
+  }));
+}
+
+
 module.exports = { 
   getPrice, 
   getMarketData, 
@@ -84,5 +108,6 @@ module.exports = {
   getTrending, 
   getExchanges, 
   getLogo,
-  searchCrypto   // <-- added export
+  searchCrypto,   // <-- added export
+  getTopCoins   // <-- new
 };
