@@ -52,8 +52,6 @@ router.delete("/user/:userId", adminController.deleteUser);
 
 router.delete("/firm/:firmId", adminController.deleteFirm);
 
-// Fetch all connected users in a firm
-router.get("/firm/:firmId/users", adminController.getUsersByFirm);
-
+router.get("/users", adminController.getAllUsers);
 
 module.exports = router;

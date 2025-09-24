@@ -344,14 +344,13 @@ exports.deleteFirm = async (req, res) => {
   }
 };
 
-// Fetch users under a firm
-exports.getUsersByFirm = async (req, res) => {
+// Fetch all users across all firms
+exports.getAllUsers = async (req, res) => {
   try {
-    const { firmId } = req.params;
-    const result = await adminService.getUsersByFirm(firmId);
-    res.json(result);
+    const users = await adminService.getAllUsers();
+    res.json(users);
   } catch (err) {
-    res.status(404).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
