@@ -3,28 +3,96 @@ const BASE_URL = 'https://api.coingecko.com/api/v3';
 const FINNHUB_API = "https://finnhub.io/api/v1";
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
+// ✅ Helper: Finnhub logo fetch
+async function getFinnhubLogo(symbol) {
+  try {
+    const resp = await axios.get(`${FINNHUB_API}/stock/profile2`, {
+      params: { symbol, token: FINNHUB_API_KEY }
+    });
+    return resp.data.logo || "";
+  } catch (err) {
+    console.error(`⚠️ Finnhub logo fetch failed for ${symbol}:`, err.message);
+    return "";
+  }
+}
+
 // ✅ Get simple price
 async function getPrice(symbol) {
-  const response = await axios.get(`${BASE_URL}/simple/price`, {
-    params: { ids: symbol, vs_currencies: 'usd' }
-  });
-  return response.data;
+  try {
+    const response = await axios.get(`${BASE_URL}/simple/price`, {
+      params: { ids: symbol, vs_currencies: 'usd' }
+    });
+    return response.data;
+  } catch (err) {
+    console.error("⚠️ CoinGecko price failed, trying Finnhub:", err.message);
+    try {
+      const resp = await axios.get(`${FINNHUB_API}/quote`, {
+        params: { symbol: `BINANCE:${symbol.toUpperCase()}USDT`, token: FINNHUB_API_KEY }
+      });
+
+      const logo = await getFinnhubLogo(symbol.toUpperCase());
+      return {
+        [symbol]: { usd: resp.data.c || null, logo }
+      };
+    } catch (innerErr) {
+      console.error("⚠️ Finnhub price failed:", innerErr.message);
+      return {};
+    }
+  }
 }
 
 // ✅ Get detailed market data
 async function getMarketData(symbol) {
-  const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
-    params: { localization: false, tickers: false, market_data: true }
-  });
-  return response.data.market_data;
+  try {
+    const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
+      params: { localization: false, tickers: false, market_data: true }
+    });
+    return response.data.market_data;
+  } catch (err) {
+    console.error("⚠️ CoinGecko marketData failed, trying Finnhub:", err.message);
+    try {
+      const resp = await axios.get(`${FINNHUB_API}/quote`, {
+        params: { symbol: `BINANCE:${symbol.toUpperCase()}USDT`, token: FINNHUB_API_KEY }
+      });
+      const logo = await getFinnhubLogo(symbol.toUpperCase());
+      return {
+        current_price: { usd: resp.data.c || null },
+        high_24h: resp.data.h || null,
+        low_24h: resp.data.l || null,
+        logo
+      };
+    } catch (innerErr) {
+      console.error("⚠️ Finnhub marketData failed:", innerErr.message);
+      return {};
+    }
+  }
 }
 
 // ✅ Get 30 days history
 async function getHistory(symbol) {
-  const response = await axios.get(`${BASE_URL}/coins/${symbol}/market_chart`, {
-    params: { vs_currency: 'usd', days: 30 }
-  });
-  return response.data;
+  try {
+    const response = await axios.get(`${BASE_URL}/coins/${symbol}/market_chart`, {
+      params: { vs_currency: 'usd', days: 30 }
+    });
+    return response.data;
+  } catch (err) {
+    console.error("⚠️ CoinGecko history failed, trying Finnhub:", err.message);
+    try {
+      const resp = await axios.get(`${FINNHUB_API}/crypto/candle`, {
+        params: {
+          symbol: `BINANCE:${symbol.toUpperCase()}USDT`,
+          resolution: "D",
+          from: Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30,
+          to: Math.floor(Date.now() / 1000),
+          token: FINNHUB_API_KEY
+        }
+      });
+      return resp.data;
+    } catch (innerErr) {
+      console.error("⚠️ Finnhub history failed:", innerErr.message);
+      return {};
+    }
+  }
 }
 
 // ✅ Get trending coins
@@ -52,15 +120,26 @@ async function getExchanges(symbol) {
 
 // ✅ Get coin logo + metadata
 async function getLogo(symbol) {
-  const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
-    params: { localization: false }
-  });
-  return {
-    id: response.data.id,
-    name: response.data.name,
-    symbol: response.data.symbol,
-    logo: response.data.image.large
-  };
+  try {
+    const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
+      params: { localization: false }
+    });
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      symbol: response.data.symbol,
+      logo: response.data.image.large
+    };
+  } catch (err) {
+    console.error("⚠️ CoinGecko logo failed, using Finnhub:", err.message);
+    const logo = await getFinnhubLogo(symbol.toUpperCase());
+    return {
+      id: symbol,
+      name: symbol,
+      symbol,
+      logo
+    };
+  }
 }
 
 // ✅ Search coins by name or symbol
@@ -81,7 +160,6 @@ async function searchCrypto(query) {
 // ✅ Get top selected coins (CoinGecko with Finnhub fallback + logos + rank merge)
 async function getTopCoins() {
   try {
-    // Try CoinGecko first
     const response = await axios.get(`${BASE_URL}/coins/markets`, {
       params: {
         vs_currency: 'usd',
@@ -102,9 +180,8 @@ async function getTopCoins() {
       market_cap_rank: c.market_cap_rank
     }));
   } catch (err) {
-    console.error("⚠️ CoinGecko failed, trying Finnhub + CoinGecko metadata:", err.message);
+    console.error("⚠️ CoinGecko topCoins failed, trying Finnhub + metadata:", err.message);
 
-    // ✅ Fallback to Finnhub for price, then merge with CoinGecko metadata
     const finnhubSymbols = [
       { id: "bitcoin", pair: "BINANCE:BTCUSDT" },
       { id: "ethereum", pair: "BINANCE:ETHUSDT" },
@@ -114,9 +191,8 @@ async function getTopCoins() {
     ];
 
     const results = [];
-
-    // First fetch CoinGecko metadata (logos + ranks) in bulk
     let metadataMap = {};
+
     try {
       const metaResp = await axios.get(`${BASE_URL}/coins/markets`, {
         params: {
@@ -139,10 +215,9 @@ async function getTopCoins() {
         return map;
       }, {});
     } catch (metaErr) {
-      console.error("⚠️ Failed to fetch CoinGecko metadata:", metaErr.message);
+      console.error("⚠️ CoinGecko metadata fetch failed:", metaErr.message);
     }
 
-    // Now fetch Finnhub prices
     for (const s of finnhubSymbols) {
       try {
         const resp = await axios.get(`${FINNHUB_API}/quote`, {
@@ -150,12 +225,14 @@ async function getTopCoins() {
         });
 
         const meta = metadataMap[s.id] || {};
+        const logo = meta.logo || await getFinnhubLogo(s.pair);
+
         results.push({
           id: s.id,
           name: meta.name || s.id,
           symbol: meta.symbol || s.id.toUpperCase(),
           price: resp.data.c || null,
-          logo: meta.logo || "",
+          logo,
           market_cap_rank: meta.market_cap_rank || null
         });
       } catch (innerErr) {
