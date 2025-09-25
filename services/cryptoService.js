@@ -1,15 +1,23 @@
 const axios = require('axios');
+const { getCached, setCache } = require('../config/cache'); // ✅ add cache
 const BASE_URL = 'https://api.coingecko.com/api/v3';
 const FINNHUB_API = "https://finnhub.io/api/v1";
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
+const TTL = 60000; // 1 min cache
 
 // ✅ Helper: Finnhub logo fetch
 async function getFinnhubLogo(symbol) {
+  const cacheKey = `logo-${symbol}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const resp = await axios.get(`${FINNHUB_API}/stock/profile2`, {
       params: { symbol, token: FINNHUB_API_KEY }
     });
-    return resp.data.logo || "";
+    const logo = resp.data.logo || "";
+    await setCache(cacheKey, logo, TTL);
+    return logo;
   } catch (err) {
     console.error(`⚠️ Finnhub logo fetch failed for ${symbol}:`, err.message);
     return "";
@@ -18,10 +26,15 @@ async function getFinnhubLogo(symbol) {
 
 // ✅ Get simple price
 async function getPrice(symbol) {
+  const cacheKey = `price-${symbol}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await axios.get(`${BASE_URL}/simple/price`, {
       params: { ids: symbol, vs_currencies: 'usd' }
     });
+    await setCache(cacheKey, response.data, TTL);
     return response.data;
   } catch (err) {
     console.error("⚠️ CoinGecko price failed, trying Finnhub:", err.message);
@@ -31,9 +44,11 @@ async function getPrice(symbol) {
       });
 
       const logo = await getFinnhubLogo(symbol.toUpperCase());
-      return {
+      const data = {
         [symbol]: { usd: resp.data.c || null, logo }
       };
+      await setCache(cacheKey, data, TTL);
+      return data;
     } catch (innerErr) {
       console.error("⚠️ Finnhub price failed:", innerErr.message);
       return {};
@@ -43,10 +58,15 @@ async function getPrice(symbol) {
 
 // ✅ Get detailed market data
 async function getMarketData(symbol) {
+  const cacheKey = `marketData-${symbol}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
       params: { localization: false, tickers: false, market_data: true }
     });
+    await setCache(cacheKey, response.data.market_data, TTL);
     return response.data.market_data;
   } catch (err) {
     console.error("⚠️ CoinGecko marketData failed, trying Finnhub:", err.message);
@@ -55,12 +75,14 @@ async function getMarketData(symbol) {
         params: { symbol: `BINANCE:${symbol.toUpperCase()}USDT`, token: FINNHUB_API_KEY }
       });
       const logo = await getFinnhubLogo(symbol.toUpperCase());
-      return {
+      const data = {
         current_price: { usd: resp.data.c || null },
         high_24h: resp.data.h || null,
         low_24h: resp.data.l || null,
         logo
       };
+      await setCache(cacheKey, data, TTL);
+      return data;
     } catch (innerErr) {
       console.error("⚠️ Finnhub marketData failed:", innerErr.message);
       return {};
@@ -70,10 +92,15 @@ async function getMarketData(symbol) {
 
 // ✅ Get 30 days history
 async function getHistory(symbol) {
+  const cacheKey = `history-${symbol}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await axios.get(`${BASE_URL}/coins/${symbol}/market_chart`, {
       params: { vs_currency: 'usd', days: 30 }
     });
+    await setCache(cacheKey, response.data, TTL);
     return response.data;
   } catch (err) {
     console.error("⚠️ CoinGecko history failed, trying Finnhub:", err.message);
@@ -87,6 +114,7 @@ async function getHistory(symbol) {
           token: FINNHUB_API_KEY
         }
       });
+      await setCache(cacheKey, resp.data, TTL);
       return resp.data;
     } catch (innerErr) {
       console.error("⚠️ Finnhub history failed:", innerErr.message);
@@ -97,8 +125,12 @@ async function getHistory(symbol) {
 
 // ✅ Get trending coins
 async function getTrending() {
+  const cacheKey = `trending`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   const response = await axios.get(`${BASE_URL}/search/trending`);
-  return response.data.coins.map(c => ({
+  const data = response.data.coins.map(c => ({
     id: c.item.id,
     name: c.item.name,
     symbol: c.item.symbol,
@@ -106,59 +138,85 @@ async function getTrending() {
     market_cap_rank: c.item.market_cap_rank,
     score: c.item.score
   }));
+  await setCache(cacheKey, data, TTL);
+  return data;
 }
 
 // ✅ Get exchanges for a coin
 async function getExchanges(symbol) {
+  const cacheKey = `exchanges-${symbol}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   const response = await axios.get(`${BASE_URL}/coins/${symbol}/tickers`);
-  return response.data.tickers.map(t => ({
+  const data = response.data.tickers.map(t => ({
     exchange: t.market.name,
     pair: `${t.base}/${t.target}`,
     volume: t.converted_volume.usd
   }));
+  await setCache(cacheKey, data, TTL);
+  return data;
 }
 
 // ✅ Get coin logo + metadata
 async function getLogo(symbol) {
+  const cacheKey = `logoMeta-${symbol}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
       params: { localization: false }
     });
-    return {
+    const data = {
       id: response.data.id,
       name: response.data.name,
       symbol: response.data.symbol,
       logo: response.data.image.large
     };
+    await setCache(cacheKey, data, TTL);
+    return data;
   } catch (err) {
     console.error("⚠️ CoinGecko logo failed, using Finnhub:", err.message);
     const logo = await getFinnhubLogo(symbol.toUpperCase());
-    return {
+    const data = {
       id: symbol,
       name: symbol,
       symbol,
       logo
     };
+    await setCache(cacheKey, data, TTL);
+    return data;
   }
 }
 
 // ✅ Search coins by name or symbol
 async function searchCrypto(query) {
+  const cacheKey = `search-${query}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   const response = await axios.get(`${BASE_URL}/search`, {
     params: { query }
   });
 
-  return response.data.coins.map(c => ({
+  const data = response.data.coins.map(c => ({
     id: c.id,
     name: c.name,
     symbol: c.symbol,
     logo: c.thumb,
     market_cap_rank: c.market_cap_rank
   }));
+  await setCache(cacheKey, data, TTL);
+  return data;
 }
 
 // ✅ Get top selected coins (CoinGecko with Finnhub fallback + logos + rank merge)
 async function getTopCoins() {
+  const cacheKey = `topCoins`;
+  const cached = await getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await axios.get(`${BASE_URL}/coins/markets`, {
       params: {
@@ -171,7 +229,7 @@ async function getTopCoins() {
       }
     });
 
-    return response.data.map(c => ({
+    const data = response.data.map(c => ({
       id: c.id,
       name: c.name,
       symbol: c.symbol,
@@ -179,6 +237,8 @@ async function getTopCoins() {
       logo: c.image,
       market_cap_rank: c.market_cap_rank
     }));
+    await setCache(cacheKey, data, TTL);
+    return data;
   } catch (err) {
     console.error("⚠️ CoinGecko topCoins failed, trying Finnhub + metadata:", err.message);
 
@@ -240,6 +300,7 @@ async function getTopCoins() {
       }
     }
 
+    await setCache(cacheKey, results, TTL);
     return results;
   }
 }
