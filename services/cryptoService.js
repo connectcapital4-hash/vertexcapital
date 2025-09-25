@@ -1,6 +1,7 @@
 const axios = require('axios');
 const BASE_URL = 'https://api.coingecko.com/api/v3';
-const cache = require('../config/cache');
+const FINNHUB_API = "https://finnhub.io/api/v1";
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
 // ✅ Get simple price
 async function getPrice(symbol) {
@@ -77,29 +78,57 @@ async function searchCrypto(query) {
   }));
 }
 
-// ✅ Get top selected coins (BTC, ETH, BNB, USDT, XRP)
+// ✅ Get top selected coins (CoinGecko with Finnhub fallback)
 async function getTopCoins() {
-  const response = await axios.get(`${BASE_URL}/coins/markets`, {
-    params: {
-      vs_currency: 'usd',
-      ids: 'bitcoin,ethereum,binancecoin,tether,ripple', // top coins
-      order: 'market_cap_desc',
-      per_page: 5,
-      page: 1,
-      sparkline: false
+  try {
+    const response = await axios.get(`${BASE_URL}/coins/markets`, {
+      params: {
+        vs_currency: 'usd',
+        ids: 'bitcoin,ethereum,binancecoin,tether,ripple',
+        order: 'market_cap_desc',
+        per_page: 5,
+        page: 1,
+        sparkline: false
+      }
+    });
+
+    return response.data.map(c => ({
+      id: c.id,
+      name: c.name,
+      symbol: c.symbol,
+      price: c.current_price,
+      logo: c.image,
+      market_cap_rank: c.market_cap_rank
+    }));
+  } catch (err) {
+    console.error("⚠️ CoinGecko failed, trying Finnhub:", err.message);
+
+    // ✅ Fallback to Finnhub
+    const symbols = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT", "BINANCE:XRPUSDT", "BINANCE:USDTUSDT"];
+    const results = [];
+
+    for (const s of symbols) {
+      try {
+        const resp = await axios.get(`${FINNHUB_API}/quote`, {
+          params: { symbol: s, token: FINNHUB_API_KEY }
+        });
+
+        results.push({
+          id: s,
+          name: s.split(":")[1].replace("USDT", ""), // BTC, ETH, etc.
+          symbol: s.split(":")[1].replace("USDT", ""),
+          price: resp.data.c, // current price
+          logo: "", // Finnhub doesn’t give logo
+          market_cap_rank: null
+        });
+      } catch (innerErr) {
+        console.error(`Finnhub fetch failed for ${s}:`, innerErr.message);
+      }
     }
-  });
 
-  return response.data.map(c => ({
-    id: c.id,
-    name: c.name,
-    symbol: c.symbol,
-    price: c.current_price,
-    logo: c.image,
-    market_cap_rank: c.market_cap_rank
-  }));
+    return results;
+  }
 }
-
 
 module.exports = { 
   getPrice, 
@@ -108,6 +137,6 @@ module.exports = {
   getTrending, 
   getExchanges, 
   getLogo,
-  searchCrypto,   // <-- added export
-  getTopCoins   // <-- new
+  searchCrypto,
+  getTopCoins
 };
