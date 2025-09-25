@@ -4,6 +4,7 @@ console.log("server.js loaded");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const axios = require("axios");
 
 const app = express();
 
@@ -37,7 +38,6 @@ const automationService = require("./services/automationService");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 
-
 // ✅ Protected admin routes
 app.use(
   "/api/admin",
@@ -54,8 +54,6 @@ app.use("/api/news", newsRoutes);
 app.use("/api/withdrawals", withdrawalRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/payments", paymentRoutes);
-
-
 
 // ✅ Health route (for uptime monitoring)
 app.get("/health", (req, res) => res.status(200).send("OK"));
@@ -80,6 +78,26 @@ try {
 } catch (err) {
   console.error("❌ Failed to start automation service:", err.message);
 }
+
+// ✅ Watchdog: check top list logos
+async function watchdog() {
+  try {
+    // 🔗 Call your hosted endpoint
+    const resp = await axios.get(`http://localhost:${PORT}/api/crypto/top/list`);
+    const coins = resp.data || [];
+
+    const missingLogos = coins.filter(c => !c.logo || c.logo.trim() === "");
+    if (missingLogos.length > 0) {
+      console.error("⚠️ Watchdog: Missing logos detected → restarting server...");
+      process.exit(1); // nodemon will restart
+    }
+  } catch (err) {
+    console.error("⚠️ Watchdog request failed:", err.message);
+  }
+}
+
+// Run watchdog every 60 seconds
+setInterval(watchdog, 60 * 1000);
 
 // ✅ Start server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
