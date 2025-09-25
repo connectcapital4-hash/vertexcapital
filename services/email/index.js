@@ -57,15 +57,12 @@ handlebars.registerHelper("formatDate", function (date, format) {
 });
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT || 465,
-  secure: process.env.SMTP_PORT == 465,
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
   },
 });
-
 
 /**
  * Compile a Handlebars email template and send
