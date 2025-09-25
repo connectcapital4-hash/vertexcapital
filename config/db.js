@@ -23,3 +23,4 @@ sequelize.authenticate()
   .catch((err) => console.error("❌ Sequelize connection error:", err.message));
 
 module.exports = sequelize;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

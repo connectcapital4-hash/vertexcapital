@@ -76,3 +76,4 @@ exports.rejectWithdrawal = async (withdrawalId, reason) => {
 
   return withdrawal;
 };
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

@@ -55,3 +55,4 @@ router.delete("/firm/:firmId", adminController.deleteFirm);
 router.get("/users", adminController.getAllUsers);
 
 module.exports = router;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

@@ -111,3 +111,4 @@ module.exports = {
   searchCrypto,   // <-- added export
   getTopCoins   // <-- new
 };
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

@@ -12,3 +12,4 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 module.exports = upload;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

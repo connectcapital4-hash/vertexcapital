@@ -17,3 +17,4 @@ async function getFinnhubNews(token) {
 }
 
 module.exports = { getNews, getFinnhubNews };
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

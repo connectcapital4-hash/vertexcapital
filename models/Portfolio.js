@@ -69,3 +69,4 @@ const Portfolio = sequelize.define(
 );
 
 module.exports = Portfolio;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

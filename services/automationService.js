@@ -88,3 +88,4 @@ exports.calculateAndDistributeProfits = async () => {
     console.error('Error in profit distribution:', error);
   }
 };
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

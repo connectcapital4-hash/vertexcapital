@@ -51,3 +51,4 @@ Firm.belongsTo(Admin, { foreignKey: "admin_id", as: "admin" });
 Admin.hasMany(Firm, { foreignKey: "admin_id", as: "firms" });
 
 module.exports = Firm;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

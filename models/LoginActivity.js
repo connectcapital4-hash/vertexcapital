@@ -23,3 +23,4 @@ const LoginActivity = sequelize.define(
 LoginActivity.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 module.exports = LoginActivity;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

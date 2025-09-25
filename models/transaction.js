@@ -34,3 +34,4 @@ const Transaction = sequelize.define(
 );
 
 module.exports = Transaction;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

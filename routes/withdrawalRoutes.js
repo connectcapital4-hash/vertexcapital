@@ -20,3 +20,4 @@ router.patch("/admin/approve/:withdrawalId", authMiddleware(["SUPERADMIN", "FIRM
 router.patch("/admin/reject/:withdrawalId", authMiddleware(["SUPERADMIN", "FIRMADMIN"]), withdrawalController.rejectWithdrawal);
 
 module.exports = router;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

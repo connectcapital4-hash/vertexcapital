@@ -148,3 +148,4 @@ exports.searchStock = async (req, res) => {
     res.status(500).json({ error: "Error searching stock" });
   }
 };
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

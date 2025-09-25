@@ -75,3 +75,5 @@ exports.rejectWithdrawal = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

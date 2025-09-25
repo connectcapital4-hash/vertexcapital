@@ -8,3 +8,4 @@ router.get("/value", authUser, portfolioController.getPortfolioValue);
 
 // ✅ FIX: export the router
 module.exports = router;
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

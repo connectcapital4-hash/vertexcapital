@@ -11,3 +11,4 @@ exports.generateToken = (admin) => {
     { expiresIn: "7d" }
   );
 };
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

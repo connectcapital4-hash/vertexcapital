@@ -36,3 +36,4 @@ const Admin = require("./models/Admin");
     process.exit(1);
   }
 })();
+///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
