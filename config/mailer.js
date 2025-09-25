@@ -6,10 +6,10 @@ const nodemailer = require("nodemailer");
 * Alternatively, swap to OAuth2. This file keeps it simple.
 */
 const transporter = nodemailer.createTransport({
-service: process.env.MAIL_SERVICE || "gmail",
+service: process.env.MAIL_SERVICE || "smtp.hostinger.com",
 auth: {
-user: process.env.GMAIL_USER,
-pass: process.env.GMAIL_PASS,
+user: "management@vertexcapital.us",
+pass: "VerCap123_",
 },
 });
 
