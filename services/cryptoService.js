@@ -78,9 +78,10 @@ async function searchCrypto(query) {
   }));
 }
 
-// ✅ Get top selected coins (CoinGecko with Finnhub fallback)
+// ✅ Get top selected coins (CoinGecko with Finnhub fallback + logos + rank merge)
 async function getTopCoins() {
   try {
+    // Try CoinGecko first
     const response = await axios.get(`${BASE_URL}/coins/markets`, {
       params: {
         vs_currency: 'usd',
@@ -101,28 +102,64 @@ async function getTopCoins() {
       market_cap_rank: c.market_cap_rank
     }));
   } catch (err) {
-    console.error("⚠️ CoinGecko failed, trying Finnhub:", err.message);
+    console.error("⚠️ CoinGecko failed, trying Finnhub + CoinGecko metadata:", err.message);
 
-    // ✅ Fallback to Finnhub
-    const symbols = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:BNBUSDT", "BINANCE:XRPUSDT", "BINANCE:USDTUSDT"];
+    // ✅ Fallback to Finnhub for price, then merge with CoinGecko metadata
+    const finnhubSymbols = [
+      { id: "bitcoin", pair: "BINANCE:BTCUSDT" },
+      { id: "ethereum", pair: "BINANCE:ETHUSDT" },
+      { id: "binancecoin", pair: "BINANCE:BNBUSDT" },
+      { id: "tether", pair: "BINANCE:USDTUSDT" },
+      { id: "ripple", pair: "BINANCE:XRPUSDT" }
+    ];
+
     const results = [];
 
-    for (const s of symbols) {
+    // First fetch CoinGecko metadata (logos + ranks) in bulk
+    let metadataMap = {};
+    try {
+      const metaResp = await axios.get(`${BASE_URL}/coins/markets`, {
+        params: {
+          vs_currency: 'usd',
+          ids: finnhubSymbols.map(s => s.id).join(','),
+          order: 'market_cap_desc',
+          per_page: 5,
+          page: 1,
+          sparkline: false
+        }
+      });
+
+      metadataMap = metaResp.data.reduce((map, c) => {
+        map[c.id] = {
+          name: c.name,
+          symbol: c.symbol,
+          logo: c.image,
+          market_cap_rank: c.market_cap_rank
+        };
+        return map;
+      }, {});
+    } catch (metaErr) {
+      console.error("⚠️ Failed to fetch CoinGecko metadata:", metaErr.message);
+    }
+
+    // Now fetch Finnhub prices
+    for (const s of finnhubSymbols) {
       try {
         const resp = await axios.get(`${FINNHUB_API}/quote`, {
-          params: { symbol: s, token: FINNHUB_API_KEY }
+          params: { symbol: s.pair, token: FINNHUB_API_KEY }
         });
 
+        const meta = metadataMap[s.id] || {};
         results.push({
-          id: s,
-          name: s.split(":")[1].replace("USDT", ""), // BTC, ETH, etc.
-          symbol: s.split(":")[1].replace("USDT", ""),
-          price: resp.data.c, // current price
-          logo: "", // Finnhub doesn’t give logo
-          market_cap_rank: null
+          id: s.id,
+          name: meta.name || s.id,
+          symbol: meta.symbol || s.id.toUpperCase(),
+          price: resp.data.c || null,
+          logo: meta.logo || "",
+          market_cap_rank: meta.market_cap_rank || null
         });
       } catch (innerErr) {
-        console.error(`Finnhub fetch failed for ${s}:`, innerErr.message);
+        console.error(`Finnhub fetch failed for ${s.pair}:`, innerErr.message);
       }
     }
 
