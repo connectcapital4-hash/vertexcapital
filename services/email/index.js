@@ -1,8 +1,10 @@
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 const fs = require("fs");
 const path = require("path");
 const handlebars = require("handlebars");
-const transporter = require("../../config/mailer"); // ✅ use the SendGrid/SMTP config
+
+// ✅ Set API Key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 /**
  * 🔹 Register custom Handlebars helpers
@@ -54,7 +56,7 @@ handlebars.registerHelper("formatDate", function (date, format) {
 });
 
 /**
- * Compile a Handlebars email template and send
+ * 🔹 Compile Handlebars template and send email
  */
 async function sendTemplatedEmail({ to, subject, template, variables, fromName }) {
   const templatePath = path.join(__dirname, "../../emails/templates", `${template}.html`);
@@ -62,9 +64,12 @@ async function sendTemplatedEmail({ to, subject, template, variables, fromName }
   const compiled = handlebars.compile(source);
   const htmlContent = compiled(variables);
 
-  await transporter.sendMail({
-    from: `${fromName || process.env.MAIL_FROM_NAME || "Vertex Capital"} <${process.env.MAIL_FROM || process.env.GMAIL_USER}>`,
+  await sgMail.send({
     to,
+    from: {
+      email: process.env.MAIL_FROM,
+      name: fromName || process.env.MAIL_FROM_NAME || "Vertex Capital",
+    },
     subject,
     html: htmlContent,
   });
@@ -138,15 +143,6 @@ async function sendAccountSuspended(data) {
   });
 }
 
-async function sendLoginOtp(data) {
-  return sendTemplatedEmail({
-    ...data,
-    subject: "Your Vertex Capital login code",
-    template: "login-otp",
-    variables: withDefaults(data),
-  });
-}
-
 async function sendAccountUnsuspended(data) {
   return sendTemplatedEmail({
     ...data,
@@ -161,6 +157,15 @@ async function sendStatusChanged(data) {
     ...data,
     subject: `Your account status is now ${data.status}`,
     template: "account-status-changed",
+    variables: withDefaults(data),
+  });
+}
+
+async function sendLoginOtp(data) {
+  return sendTemplatedEmail({
+    ...data,
+    subject: "Your Vertex Capital login code",
+    template: "login-otp",
     variables: withDefaults(data),
   });
 }

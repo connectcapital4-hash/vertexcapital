@@ -1,45 +1,31 @@
-const nodemailer = require("nodemailer");
-const sgTransport = require("nodemailer-sendgrid");
+const sgMail = require("@sendgrid/mail");
 
-/**
- * SendGrid as default mailer
- */
-let transporter;
-
-if (process.env.SENDGRID_API_KEY) {
-  transporter = nodemailer.createTransport(
-    sgTransport({
-      apiKey: process.env.SENDGRID_API_KEY,
-    })
-  );
-  console.log("📧 Using SendGrid as default mailer");
+// ✅ Set SendGrid API Key
+if (!process.env.SENDGRID_API_KEY) {
+  console.error("❌ SENDGRID_API_KEY is missing in environment variables");
 } else {
-  /**
-   * Fallback: Hostinger SMTP Transport
-   */
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT || 465,
-    secure: process.env.SMTP_PORT == 465, // true for 465, false for 587
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-  console.log("📧 Using Hostinger SMTP fallback");
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log("📧 Using SendGrid as default mailer");
 }
 
 async function verifyTransporter() {
   try {
-    await transporter.verify();
-    console.log("📧 Mailer is ready");
+    await sgMail.send({
+      to: process.env.ADMIN_EMAIL.split(",")[0], // test with first admin email
+      from: {
+        email: process.env.MAIL_FROM,
+        name: process.env.MAIL_FROM_NAME || "Vertex Capital",
+      },
+      subject: "✅ SendGrid Mailer is ready",
+      text: "This is a test email to confirm SendGrid setup.",
+    });
+    console.log("📧 SendGrid Mailer is ready");
   } catch (err) {
-    console.error("❌ Mailer verification failed:", err.message);
+    console.error("❌ SendGrid verification failed:", err.message);
   }
 }
 
+// Don’t run verification in tests
 if (process.env.NODE_ENV !== "test") verifyTransporter();
 
-module.exports = transporter;
-
-
+module.exports = sgMail;
