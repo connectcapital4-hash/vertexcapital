@@ -8,6 +8,15 @@ const TTL = 60000; // 1 min cache
 // ✅ Local fallback cache (in-memory)
 const localCache = new Map();
 
+// ✅ Default logo map (permanent fallback)
+const DEFAULT_LOGOS = {
+  bitcoin: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400",
+  ethereum: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501628",
+  tether: "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
+  ripple: "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501442",
+  binancecoin: "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501970"
+};
+
 // Helper: get from local cache
 async function getLocalCache(key) {
   const entry = localCache.get(key);
@@ -46,7 +55,7 @@ async function setCacheWithFallback(key, value, ttl) {
   await setLocalCache(key, value, ttl); // always keep local copy
 }
 
-// ✅ Helper: Finnhub logo fetch
+// ✅ Helper: Finnhub logo fetch with default fallback
 async function getFinnhubLogo(symbol) {
   const cacheKey = `logo-${symbol}`;
   const cached = await getCacheWithFallback(cacheKey);
@@ -56,12 +65,12 @@ async function getFinnhubLogo(symbol) {
     const resp = await axios.get(`${FINNHUB_API}/stock/profile2`, {
       params: { symbol, token: FINNHUB_API_KEY }
     });
-    const logo = resp.data.logo || "";
+    const logo = resp.data.logo || DEFAULT_LOGOS[symbol.toLowerCase()] || "";
     await setCacheWithFallback(cacheKey, logo, TTL);
     return logo;
   } catch (err) {
     console.error(`⚠️ Finnhub logo fetch failed for ${symbol}:`, err.message);
-    return "";
+    return DEFAULT_LOGOS[symbol.toLowerCase()] || "";
   }
 }
 
@@ -84,7 +93,7 @@ async function getPrice(symbol) {
         params: { symbol: `BINANCE:${symbol.toUpperCase()}USDT`, token: FINNHUB_API_KEY }
       });
 
-      const logo = await getFinnhubLogo(symbol.toUpperCase());
+      const logo = await getFinnhubLogo(symbol.toLowerCase());
       const data = {
         [symbol]: { usd: resp.data.c || null, logo }
       };
@@ -115,7 +124,7 @@ async function getMarketData(symbol) {
       const resp = await axios.get(`${FINNHUB_API}/quote`, {
         params: { symbol: `BINANCE:${symbol.toUpperCase()}USDT`, token: FINNHUB_API_KEY }
       });
-      const logo = await getFinnhubLogo(symbol.toUpperCase());
+      const logo = await getFinnhubLogo(symbol.toLowerCase());
       const data = {
         current_price: { usd: resp.data.c || null },
         high_24h: resp.data.h || null,
@@ -213,18 +222,18 @@ async function getLogo(symbol) {
       id: response.data.id,
       name: response.data.name,
       symbol: response.data.symbol,
-      logo: response.data.image.large
+      logo: response.data.image.large || DEFAULT_LOGOS[symbol.toLowerCase()] || ""
     };
     await setCacheWithFallback(cacheKey, data, TTL);
     return data;
   } catch (err) {
     console.error("⚠️ CoinGecko logo failed, using Finnhub:", err.message);
-    const logo = await getFinnhubLogo(symbol.toUpperCase());
+    const logo = await getFinnhubLogo(symbol.toLowerCase());
     const data = {
       id: symbol,
       name: symbol,
       symbol,
-      logo
+      logo: logo || DEFAULT_LOGOS[symbol.toLowerCase()] || ""
     };
     await setCacheWithFallback(cacheKey, data, TTL);
     return data;
@@ -245,7 +254,7 @@ async function searchCrypto(query) {
     id: c.id,
     name: c.name,
     symbol: c.symbol,
-    logo: c.thumb,
+    logo: c.thumb || DEFAULT_LOGOS[c.id] || "",
     market_cap_rank: c.market_cap_rank
   }));
   await setCacheWithFallback(cacheKey, data, TTL);
@@ -275,7 +284,7 @@ async function getTopCoins() {
       name: c.name,
       symbol: c.symbol,
       price: c.current_price,
-      logo: c.image,
+      logo: c.image || DEFAULT_LOGOS[c.id] || "",
       market_cap_rank: c.market_cap_rank
     }));
     await setCacheWithFallback(cacheKey, data, TTL);
@@ -310,7 +319,7 @@ async function getTopCoins() {
         map[c.id] = {
           name: c.name,
           symbol: c.symbol,
-          logo: c.image,
+          logo: c.image || DEFAULT_LOGOS[c.id] || "",
           market_cap_rank: c.market_cap_rank
         };
         return map;
@@ -326,7 +335,7 @@ async function getTopCoins() {
         });
 
         const meta = metadataMap[s.id] || {};
-        const logo = meta.logo || await getFinnhubLogo(s.pair);
+        const logo = meta.logo || await getFinnhubLogo(s.id) || DEFAULT_LOGOS[s.id] || "";
 
         results.push({
           id: s.id,
