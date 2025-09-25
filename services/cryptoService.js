@@ -1,14 +1,55 @@
 const axios = require('axios');
-const { getCached, setCache } = require('../config/cache'); // ✅ add cache
+const { getCached, setCache } = require('../config/cache'); // ✅ Redis cache
 const BASE_URL = 'https://api.coingecko.com/api/v3';
 const FINNHUB_API = "https://finnhub.io/api/v1";
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const TTL = 60000; // 1 min cache
 
+// ✅ Local fallback cache (in-memory)
+const localCache = new Map();
+
+// Helper: get from local cache
+async function getLocalCache(key) {
+  const entry = localCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiry) {
+    localCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+// Helper: set local cache
+async function setLocalCache(key, value, ttl) {
+  localCache.set(key, { value, expiry: Date.now() + ttl });
+}
+
+// ✅ Unified cache getter (Redis → Local)
+async function getCacheWithFallback(key) {
+  try {
+    const redisValue = await getCached(key);
+    if (redisValue) return redisValue;
+  } catch (err) {
+    console.error(`⚠️ Redis get failed, falling back to local for ${key}:`, err.message);
+  }
+  return await getLocalCache(key);
+}
+
+// ✅ Unified cache setter (Redis → Local)
+async function setCacheWithFallback(key, value, ttl) {
+  try {
+    await setCache(key, value, ttl);
+  } catch (err) {
+    console.error(`⚠️ Redis set failed, storing local for ${key}:`, err.message);
+    await setLocalCache(key, value, ttl);
+  }
+  await setLocalCache(key, value, ttl); // always keep local copy
+}
+
 // ✅ Helper: Finnhub logo fetch
 async function getFinnhubLogo(symbol) {
   const cacheKey = `logo-${symbol}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   try {
@@ -16,7 +57,7 @@ async function getFinnhubLogo(symbol) {
       params: { symbol, token: FINNHUB_API_KEY }
     });
     const logo = resp.data.logo || "";
-    await setCache(cacheKey, logo, TTL);
+    await setCacheWithFallback(cacheKey, logo, TTL);
     return logo;
   } catch (err) {
     console.error(`⚠️ Finnhub logo fetch failed for ${symbol}:`, err.message);
@@ -27,14 +68,14 @@ async function getFinnhubLogo(symbol) {
 // ✅ Get simple price
 async function getPrice(symbol) {
   const cacheKey = `price-${symbol}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   try {
     const response = await axios.get(`${BASE_URL}/simple/price`, {
       params: { ids: symbol, vs_currencies: 'usd' }
     });
-    await setCache(cacheKey, response.data, TTL);
+    await setCacheWithFallback(cacheKey, response.data, TTL);
     return response.data;
   } catch (err) {
     console.error("⚠️ CoinGecko price failed, trying Finnhub:", err.message);
@@ -47,7 +88,7 @@ async function getPrice(symbol) {
       const data = {
         [symbol]: { usd: resp.data.c || null, logo }
       };
-      await setCache(cacheKey, data, TTL);
+      await setCacheWithFallback(cacheKey, data, TTL);
       return data;
     } catch (innerErr) {
       console.error("⚠️ Finnhub price failed:", innerErr.message);
@@ -59,14 +100,14 @@ async function getPrice(symbol) {
 // ✅ Get detailed market data
 async function getMarketData(symbol) {
   const cacheKey = `marketData-${symbol}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   try {
     const response = await axios.get(`${BASE_URL}/coins/${symbol}`, {
       params: { localization: false, tickers: false, market_data: true }
     });
-    await setCache(cacheKey, response.data.market_data, TTL);
+    await setCacheWithFallback(cacheKey, response.data.market_data, TTL);
     return response.data.market_data;
   } catch (err) {
     console.error("⚠️ CoinGecko marketData failed, trying Finnhub:", err.message);
@@ -81,7 +122,7 @@ async function getMarketData(symbol) {
         low_24h: resp.data.l || null,
         logo
       };
-      await setCache(cacheKey, data, TTL);
+      await setCacheWithFallback(cacheKey, data, TTL);
       return data;
     } catch (innerErr) {
       console.error("⚠️ Finnhub marketData failed:", innerErr.message);
@@ -93,14 +134,14 @@ async function getMarketData(symbol) {
 // ✅ Get 30 days history
 async function getHistory(symbol) {
   const cacheKey = `history-${symbol}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   try {
     const response = await axios.get(`${BASE_URL}/coins/${symbol}/market_chart`, {
       params: { vs_currency: 'usd', days: 30 }
     });
-    await setCache(cacheKey, response.data, TTL);
+    await setCacheWithFallback(cacheKey, response.data, TTL);
     return response.data;
   } catch (err) {
     console.error("⚠️ CoinGecko history failed, trying Finnhub:", err.message);
@@ -114,7 +155,7 @@ async function getHistory(symbol) {
           token: FINNHUB_API_KEY
         }
       });
-      await setCache(cacheKey, resp.data, TTL);
+      await setCacheWithFallback(cacheKey, resp.data, TTL);
       return resp.data;
     } catch (innerErr) {
       console.error("⚠️ Finnhub history failed:", innerErr.message);
@@ -126,7 +167,7 @@ async function getHistory(symbol) {
 // ✅ Get trending coins
 async function getTrending() {
   const cacheKey = `trending`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   const response = await axios.get(`${BASE_URL}/search/trending`);
@@ -138,14 +179,14 @@ async function getTrending() {
     market_cap_rank: c.item.market_cap_rank,
     score: c.item.score
   }));
-  await setCache(cacheKey, data, TTL);
+  await setCacheWithFallback(cacheKey, data, TTL);
   return data;
 }
 
 // ✅ Get exchanges for a coin
 async function getExchanges(symbol) {
   const cacheKey = `exchanges-${symbol}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   const response = await axios.get(`${BASE_URL}/coins/${symbol}/tickers`);
@@ -154,14 +195,14 @@ async function getExchanges(symbol) {
     pair: `${t.base}/${t.target}`,
     volume: t.converted_volume.usd
   }));
-  await setCache(cacheKey, data, TTL);
+  await setCacheWithFallback(cacheKey, data, TTL);
   return data;
 }
 
 // ✅ Get coin logo + metadata
 async function getLogo(symbol) {
   const cacheKey = `logoMeta-${symbol}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   try {
@@ -174,7 +215,7 @@ async function getLogo(symbol) {
       symbol: response.data.symbol,
       logo: response.data.image.large
     };
-    await setCache(cacheKey, data, TTL);
+    await setCacheWithFallback(cacheKey, data, TTL);
     return data;
   } catch (err) {
     console.error("⚠️ CoinGecko logo failed, using Finnhub:", err.message);
@@ -185,7 +226,7 @@ async function getLogo(symbol) {
       symbol,
       logo
     };
-    await setCache(cacheKey, data, TTL);
+    await setCacheWithFallback(cacheKey, data, TTL);
     return data;
   }
 }
@@ -193,7 +234,7 @@ async function getLogo(symbol) {
 // ✅ Search coins by name or symbol
 async function searchCrypto(query) {
   const cacheKey = `search-${query}`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   const response = await axios.get(`${BASE_URL}/search`, {
@@ -207,14 +248,14 @@ async function searchCrypto(query) {
     logo: c.thumb,
     market_cap_rank: c.market_cap_rank
   }));
-  await setCache(cacheKey, data, TTL);
+  await setCacheWithFallback(cacheKey, data, TTL);
   return data;
 }
 
-// ✅ Get top selected coins (CoinGecko with Finnhub fallback + logos + rank merge)
+// ✅ Get top selected coins
 async function getTopCoins() {
   const cacheKey = `topCoins`;
-  const cached = await getCached(cacheKey);
+  const cached = await getCacheWithFallback(cacheKey);
   if (cached) return cached;
 
   try {
@@ -237,7 +278,7 @@ async function getTopCoins() {
       logo: c.image,
       market_cap_rank: c.market_cap_rank
     }));
-    await setCache(cacheKey, data, TTL);
+    await setCacheWithFallback(cacheKey, data, TTL);
     return data;
   } catch (err) {
     console.error("⚠️ CoinGecko topCoins failed, trying Finnhub + metadata:", err.message);
@@ -300,7 +341,7 @@ async function getTopCoins() {
       }
     }
 
-    await setCache(cacheKey, results, TTL);
+    await setCacheWithFallback(cacheKey, results, TTL);
     return results;
   }
 }
