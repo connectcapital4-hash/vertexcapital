@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
 const handlebars = require("handlebars");
+const transporter = require("../../config/mailer"); // ✅ use the SendGrid/SMTP config
 
 /**
  * 🔹 Register custom Handlebars helpers
@@ -20,16 +21,13 @@ handlebars.registerHelper("lowercase", function (str) {
 
 /**
  * 🔹 Date formatting helper
- * Usage in template: {{formatDate someDate "MMM DD, YYYY"}}
  */
 handlebars.registerHelper("formatDate", function (date, format) {
   if (!date) return "";
   const d = new Date(date);
-  if (isNaN(d)) return date; // fallback if not valid date
+  if (isNaN(d)) return date;
 
-  // Default to "YYYY-MM-DD" if no format passed
   const options = {};
-
   switch (format) {
     case "MMM DD, YYYY":
       options.month = "short";
@@ -52,20 +50,8 @@ handlebars.registerHelper("formatDate", function (date, format) {
       options.day = "2-digit";
       break;
   }
-
   return new Intl.DateTimeFormat("en-US", options).format(d);
 });
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT || 465,
-  secure: process.env.SMTP_PORT == 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
 
 /**
  * Compile a Handlebars email template and send
@@ -74,7 +60,6 @@ async function sendTemplatedEmail({ to, subject, template, variables, fromName }
   const templatePath = path.join(__dirname, "../../emails/templates", `${template}.html`);
   const source = fs.readFileSync(templatePath, "utf8");
   const compiled = handlebars.compile(source);
-
   const htmlContent = compiled(variables);
 
   await transporter.sendMail({
@@ -179,6 +164,7 @@ async function sendStatusChanged(data) {
     variables: withDefaults(data),
   });
 }
+
 async function sendPasswordResetOtp(data) {
   return sendTemplatedEmail({
     ...data,
@@ -198,12 +184,10 @@ async function sendPasswordResetSuccess(data) {
 }
 
 async function sendUserLoginAlert(data) {
-  // Allow multiple admin emails (comma-separated)
   const recipients = data.to.includes(",")
     ? data.to.split(",").map((email) => email.trim())
     : [data.to];
 
-  // Send email to all recipients
   const results = [];
   for (const email of recipients) {
     results.push(
@@ -218,11 +202,10 @@ async function sendUserLoginAlert(data) {
           firmName: data.firmName,
           loginTime: data.loginTime,
           ipAddress: data.ipAddress,
-        }), // ✅ use withDefaults so logoUrl + currentYear are included
+        }),
       })
     );
   }
-
   return Promise.all(results);
 }
 
@@ -236,8 +219,8 @@ module.exports = {
   sendAccountUnsuspended,
   sendStatusChanged,
   sendLoginOtp,
-  sendPasswordResetOtp,     // <-- ADD THIS
-  sendPasswordResetSuccess, // <-- ADD THIS
-  sendUserLoginAlert, // ✅ added here
+  sendPasswordResetOtp,
+  sendPasswordResetSuccess,
+  sendUserLoginAlert,
   sendTemplatedEmail,
 };
