@@ -13,4 +13,3 @@ router.get("/history", authUser, paymentController.getPaymentHistory);
 router.post("/confirm", authMiddleware(["SUPERADMIN", "FIRMADMIN"]), paymentController.confirmPayment);
 
 module.exports = router;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

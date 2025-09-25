@@ -52,4 +52,3 @@ const Payment = sequelize.define(
 );
 
 module.exports = Payment;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

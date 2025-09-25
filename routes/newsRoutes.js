@@ -6,4 +6,4 @@ router.get('/', newsController.getNews);
 router.get('/finnhub', newsController.getFinnhubNews);
 
 module.exports = router;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+

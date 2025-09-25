@@ -8,4 +8,3 @@ cloudinary.config({
 
 module.exports = cloudinary;
 
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

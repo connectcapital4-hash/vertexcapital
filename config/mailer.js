@@ -42,4 +42,4 @@ if (process.env.NODE_ENV !== "test") verifyTransporter();
 
 module.exports = transporter;
 
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+

@@ -450,4 +450,4 @@ exports.searchFirms = async (req, res) => {
     return res.status(500).json({ message: "Firm search failed", error: err.message });
   }
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+

@@ -10,4 +10,4 @@ router.post("/register", authMiddleware(["SUPERADMIN"]), authController.register
 router.post("/login", authController.loginAdmin);
 
 module.exports = router;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+

@@ -109,4 +109,3 @@ exports.getPaymentHistory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

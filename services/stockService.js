@@ -156,4 +156,3 @@ module.exports = {
   getTopStocks,   // <-- new
   searchStock,    // <-- new
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

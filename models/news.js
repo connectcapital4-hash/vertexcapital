@@ -37,4 +37,3 @@ const News = sequelize.define(
 );
 
 module.exports = News;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

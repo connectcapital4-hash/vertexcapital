@@ -36,4 +36,3 @@ const Admin = sequelize.define("Admin", {
 });
 
 module.exports = Admin;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

@@ -368,7 +368,7 @@ exports.getAllUsers = async () => {
     order: [["created_at", "DESC"]],
   });
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+
 
 
 

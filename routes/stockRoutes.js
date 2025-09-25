@@ -18,4 +18,4 @@ router.get('/:symbol/indicators', stockController.getIndicators); // e.g. /api/s
 router.get('/:symbol/logo', stockController.getLogo); // e.g. /api/stocks/AAPL/logo → logo + metadata
 
 module.exports = router;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+

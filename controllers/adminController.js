@@ -353,5 +353,5 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+
 

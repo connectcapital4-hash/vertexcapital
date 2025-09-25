@@ -45,4 +45,3 @@ const Withdrawal = sequelize.define(
 );
 
 module.exports = Withdrawal;
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

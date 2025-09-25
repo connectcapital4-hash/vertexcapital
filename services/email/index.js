@@ -224,4 +224,3 @@ module.exports = {
   sendUserLoginAlert,
   sendTemplatedEmail,
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j

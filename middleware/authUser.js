@@ -32,4 +32,4 @@ exports.authUser = async (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized", error: err.message });
   }
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
+

@@ -52,4 +52,3 @@ exports.getTotalPortfolioValue = async (userId) => {
     return 0;
   }
 };
-///c%3A/Users/USER/capitalconnect/backend/config/cloudinary.j
