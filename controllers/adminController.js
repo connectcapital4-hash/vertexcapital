@@ -21,15 +21,28 @@ exports.createFirm = async (req, res) => {
 };
 
 // Upload firm profile picture
+// Upload firm profile picture
 exports.uploadFirmProfile = async (req, res) => {
   try {
     const { firmId } = req.params;
-    const firm = await adminService.uploadFirmProfile(firmId, req.file, req.body);
+
+    let profilePictureUrl;
+
+    if (req.file && req.file.path) {
+      profilePictureUrl = req.file.path; // Cloudinary URL
+    } else if (req.body.profile_picture) {
+      profilePictureUrl = req.body.profile_picture; // Direct URL
+    } else {
+      return res.status(400).json({ error: "No file or URL provided" });
+    }
+
+    const firm = await adminService.uploadFirmProfile(firmId, profilePictureUrl);
     res.json(firm);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Create user inside a firm
 exports.createUserInFirm = async (req, res) => {

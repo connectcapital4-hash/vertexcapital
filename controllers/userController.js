@@ -209,20 +209,33 @@ exports.me = async (req, res) => {
 
 
 // 🔹 Update profile picture
+// 🔹 Update profile picture
 exports.updateProfilePicture = async (req, res) => {
   try {
-    const { profile_picture } = req.body;
+    if (req.file && req.file.path) {
+      // ✅ File upload via Cloudinary
+      req.user.profile_picture = req.file.path;
+    } else if (req.body.profile_picture) {
+      // ✅ Fallback: user sent a URL directly
+      req.user.profile_picture = req.body.profile_picture;
+    } else {
+      return res.status(400).json({ message: "No file or URL provided" });
+    }
 
-    req.user.profile_picture = profile_picture;
     await req.user.save();
 
-    return res.json({ message: "Profile picture updated", profile_picture });
+    return res.json({
+      message: "Profile picture updated",
+      profile_picture: req.user.profile_picture,
+    });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "Failed to update profile picture", error: err.message });
+    return res.status(500).json({
+      message: "Failed to update profile picture",
+      error: err.message,
+    });
   }
 };
+
 
 // 🔹 Request firm connection
 exports.requestFirmConnect = async (req, res) => {

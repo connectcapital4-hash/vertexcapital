@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
 const { authUser } = require("../middleware/authUser");
+const upload = require("../middleware/upload");
 
 // Public
 router.post("/login", userController.login);           // step 1: request OTP
@@ -10,7 +11,13 @@ router.post("/register", userController.register);
 
 // Protected
 router.get("/me", authUser, userController.me);
-router.put("/profile-picture", authUser, userController.updateProfilePicture);
+// ✅ support file upload
+router.put(
+  "/profile-picture",
+  authUser,
+  upload.single("profile_picture"), // 👈 field name
+  userController.updateProfilePicture
+);
 
 // Firm connection flow
 router.post("/request-firm-connect", userController.requestFirmConnect);

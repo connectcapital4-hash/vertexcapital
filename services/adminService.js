@@ -18,16 +18,24 @@ exports.createFirm = async (data, adminId) => {
 };
 
 // Upload firm profile picture
-exports.uploadFirmProfile = async (firmId, file, body = {}) => {
+exports.uploadFirmProfile = async (firmId, profilePictureUrl, body = {}) => {
   const firm = await Firm.findByPk(firmId);
   if (!firm) throw new Error("Firm not found");
 
-  if (file?.path) firm.profile_Picture = file.path; // Cloudinary URL
-  if (body?.name) firm.name = body.name;
+  // ✅ Set profile picture if provided
+  if (profilePictureUrl) {
+    firm.profile_picture = profilePictureUrl; // Cloudinary URL or direct link
+  }
+
+  // ✅ Optionally update other fields
+  if (body?.name) {
+    firm.name = body.name;
+  }
 
   await firm.save();
   return firm;
 };
+
 
 // ✅ FIXED: Create or update user in firm
 exports.createUserInFirm = async (firmId, data) => {

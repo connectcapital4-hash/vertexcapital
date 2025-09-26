@@ -1,10 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const adminController = require("../controllers/adminController");
+const upload = require("../middleware/upload");
 
 // Firm management
 router.post("/firm", adminController.createFirm);
-router.post("/firm/:firmId/profile-picture", adminController.uploadFirmProfile);
+// ✅ Add multer here
+router.post(
+  "/firm/:firmId/profile-picture",
+  upload.single("profile_picture"),
+  adminController.uploadFirmProfile
+);
 
 // Users inside a firm
 router.post("/firm/:firmId/user", adminController.createUserInFirm);
