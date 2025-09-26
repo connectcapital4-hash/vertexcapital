@@ -26,8 +26,8 @@ router.post("/user/:userId/profit", adminController.setUserProfit);
 router.post("/user/:userId/asset", adminController.assignAsset);
 
 // News
-router.post("/news", adminController.createNews);
-router.put("/news/:newsId", adminController.editNews);
+router.post("/news", upload.single("image"), adminController.createNews);
+router.put("/news/:newsId", upload.single("image"), adminController.editNews);
 
 // connect existing user to firm
 router.post("/user/:userId/connect", adminController.connectUserToFirm);

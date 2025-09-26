@@ -261,12 +261,11 @@ exports.createNews = async (data, file, adminId) => {
     title: data.title,
     body: data.body,
     link: data.link || null,
-    image_url: file?.path || null,
-    published_by: adminId, // ✅ track who published
+    image_url: file?.path || null, // ✅ Cloudinary URL
+    published_by: adminId,
     created_at: new Date()
   });
 };
-
 
 // Edit news
 exports.editNews = async (newsId, data, file) => {
@@ -274,11 +273,12 @@ exports.editNews = async (newsId, data, file) => {
   if (!news) throw new Error("News not found");
 
   Object.assign(news, data);
-  if (file?.path) news.imageUrl = file.path;
+  if (file?.path) news.image_url = file.path; // ✅ fixed field
 
   await news.save();
   return news;
 };
+
 // Get firm by ID
 exports.getFirmById = async (firmId) => {
   const firm = await Firm.findByPk(firmId);
