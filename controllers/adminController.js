@@ -13,12 +13,13 @@ const LoginActivity = require("../models/LoginActivity");
 // Create firm
 exports.createFirm = async (req, res) => {
   try {
-    const firm = await adminService.createFirm(req.body, req.admin.id); // 👈 use JWT admin.id
+    const firm = await adminService.createFirm(req.body, req.admin.id);
     res.json(firm);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Upload firm profile picture
 // Upload firm profile picture

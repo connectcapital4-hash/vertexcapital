@@ -4,13 +4,19 @@ const adminController = require("../controllers/adminController");
 const upload = require("../middleware/upload");
 
 // Firm management
-router.post("/firm", adminController.createFirm);
-// ✅ Add multer here
+router.post(
+  "/firm",
+  upload.none(), // 👈 accept formData without file (text only)
+  adminController.createFirm
+);
+
+// Upload or update firm profile picture
 router.post(
   "/firm/:firmId/profile-picture",
   upload.single("profile_picture"),
   adminController.uploadFirmProfile
 );
+
 
 // Users inside a firm
 router.post("/firm/:firmId/user", adminController.createUserInFirm);
