@@ -6,7 +6,7 @@ const upload = require("../middleware/upload");
 // Firm management
 router.post(
   "/firm",
-  upload.none(), // 👈 accept formData without file (text only)
+  upload.single("profile_picture"), // 👈 allow text + file in formData
   adminController.createFirm
 );
 
@@ -16,6 +16,7 @@ router.post(
   upload.single("profile_picture"),
   adminController.uploadFirmProfile
 );
+
 
 
 // Users inside a firm

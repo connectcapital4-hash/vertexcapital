@@ -13,9 +13,11 @@ exports.createFirm = async (data, adminId) => {
 
   return await Firm.create({
     ...data,
-    admin_id: adminId,  // ✅ integer from JWT
+    profile_picture: data.profile_picture || null, // ✅ optional picture
+    admin_id: adminId,
   });
 };
+
 
 // Upload firm profile picture
 exports.uploadFirmProfile = async (firmId, profilePictureUrl, body = {}) => {

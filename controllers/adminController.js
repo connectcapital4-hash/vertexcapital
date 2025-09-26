@@ -13,12 +13,26 @@ const LoginActivity = require("../models/LoginActivity");
 // Create firm
 exports.createFirm = async (req, res) => {
   try {
-    const firm = await adminService.createFirm(req.body, req.admin.id);
+    let profilePictureUrl;
+
+    // ✅ Handle file upload (Cloudinary URL)
+    if (req.file && req.file.path) {
+      profilePictureUrl = req.file.path;
+    } else if (req.body.profile_picture) {
+      profilePictureUrl = req.body.profile_picture; // direct URL fallback
+    }
+
+    const firm = await adminService.createFirm(
+      { ...req.body, profile_picture: profilePictureUrl },
+      req.admin.id
+    );
+
     res.json(firm);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 // Upload firm profile picture
