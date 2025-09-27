@@ -233,20 +233,19 @@ exports.connectUserToFirm = async (req, res) => {
 
 // Add to adminController.js
 // Update firm crypto addresses
-// Update firm crypto addresses
 exports.updateFirmCryptoAddresses = async (req, res) => {
   try {
     const { firmId } = req.params;
-    const { btcAddress, ethAddress, usdtAddress } = req.body;
+    const { crypto_btc_address, crypto_eth_address, crypto_usdt_address } = req.body;
 
     const firm = await Firm.findByPk(firmId);
     if (!firm) return res.status(404).json({ error: "Firm not found" });
 
-    if (btcAddress !== undefined) firm.crypto_btc_address = btcAddress;
-    if (ethAddress !== undefined) firm.crypto_eth_address = ethAddress;
-    if (usdtAddress !== undefined) firm.crypto_usdt_address = usdtAddress;
+    if (crypto_btc_address !== undefined) firm.crypto_btc_address = crypto_btc_address;
+    if (crypto_eth_address !== undefined) firm.crypto_eth_address = crypto_eth_address;
+    if (crypto_usdt_address !== undefined) firm.crypto_usdt_address = crypto_usdt_address;
 
-    await firm.save(); // ✅ persists to DB
+    await firm.save();
 
     res.json({
       message: "Crypto addresses updated successfully",
