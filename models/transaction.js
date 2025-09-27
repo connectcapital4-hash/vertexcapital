@@ -1,4 +1,3 @@
-// models/Transaction.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
@@ -13,7 +12,7 @@ const Transaction = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: "user_id", // maps to DB column
+      field: "user_id",
     },
     type: {
       type: DataTypes.ENUM("CREDIT", "PROFIT", "DEBIT", "WITHDRAW"),
@@ -28,8 +27,8 @@ const Transaction = sequelize.define(
     },
   },
   {
-    tableName: "transaction", // ✅ match exact DB table name
-    timestamps: false,        // DB doesn’t have updated_at
+    tableName: "transaction",
+    timestamps: false,
   }
 );
 

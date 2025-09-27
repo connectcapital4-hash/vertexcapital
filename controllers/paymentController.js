@@ -103,9 +103,9 @@ exports.getPaymentHistory = async (req, res) => {
     const transactions = await Transaction.findAll({
       where: {
         userId: req.user.id,
-        type: "CREDIT"
+        type: "CREDIT",
       },
-      order: [["created_at", "DESC"]],
+      order: [["createdAt", "DESC"]], // use model field, not raw DB column
     });
 
     res.json(transactions);
