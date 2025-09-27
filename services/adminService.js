@@ -7,6 +7,9 @@ const News = require("../models/news");
 const Email = require("./email");  // ✅ no destructure
 const cryptoService = require("../services/cryptoService");
 const stockService = require("../services/stockService");
+const Payment = require("../models/Payment"); // ✅ Fixed import name
+const Withdrawal = require("../models/Withdrawal"); // ✅ ADD THIS IMPORT
+
 
 
 
