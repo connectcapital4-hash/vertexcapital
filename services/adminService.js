@@ -5,6 +5,9 @@ const Portfolio = require("../models/Portfolio");
 const Transaction = require("../models/transaction");
 const News = require("../models/news");
 const Email = require("./email");  // ✅ no destructure
+const cryptoService = require("../services/cryptoService");
+const stockService = require("../services/stockService");
+
 
 
 // Create firm
