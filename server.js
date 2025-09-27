@@ -37,6 +37,9 @@ const automationService = require("./services/automationService");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 
+// ✅ Import new services
+const cronService = require("./services/cronService");
+const portfolioGrowthRoutes = require("./routes/portfolioGrowthRoutes");
 
 // ✅ Protected admin routes
 app.use(
@@ -54,8 +57,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/withdrawals", withdrawalRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/payments", paymentRoutes);
-
-
+app.use("/api/portfolio-growth", portfolioGrowthRoutes);
 
 // ✅ Health route (for uptime monitoring)
 app.get("/health", (req, res) => res.status(200).send("OK"));
@@ -79,6 +81,14 @@ try {
   console.log("Automated profit distribution service started");
 } catch (err) {
   console.error("❌ Failed to start automation service:", err.message);
+}
+
+// ✅ Start portfolio growth scheduler
+try {
+  cronService.startPortfolioGrowthScheduler();
+  console.log("Portfolio growth scheduler started");
+} catch (err) {
+  console.error("❌ Failed to start portfolio growth scheduler:", err.message);
 }
 
 // ✅ Start server

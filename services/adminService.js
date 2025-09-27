@@ -11,8 +11,6 @@ const Payment = require("../models/Payment"); // ✅ Fixed import name
 const Withdrawal = require("../models/Withdrawal"); // ✅ ADD THIS IMPORT
 
 
-
-
 // Create firm
 exports.createFirm = async (data, adminId) => {
   if (!data.name) throw new Error("Firm name is required");
@@ -132,9 +130,15 @@ exports.setUserProfit = async (userId, amount, range) => {
 };
 
 // Enhanced adminService - assignAsset method - FIXED
+// Enhanced adminService - assignAsset method - FIXED
 exports.assignAsset = async (userId, data) => {
   const user = await User.findByPk(userId);
   if (!user) throw new Error("User not found");
+  
+  // Check if user has sufficient balance
+  if (parseFloat(user.balance || 0) < Number(data.assignedValue)) {
+    throw new Error("Insufficient balance to assign asset");
+  }
   
   // Validate asset exists and get current price
   let currentPrice = 0;
@@ -185,18 +189,15 @@ exports.assignAsset = async (userId, data) => {
     lastUpdated: new Date()
   });
   
-  // ✅ FIX: Store logo in meta field for frontend display
-  portfolio.dataValues.logo = assetLogo; // Add logo to response
-  
-  // Update user balance
-  user.balance = parseFloat(user.balance || 0) + Number(data.assignedValue);
+  // ✅ FIX: Deduct from user balance instead of adding
+  user.balance = parseFloat(user.balance || 0) - Number(data.assignedValue);
   await user.save();
   
   // Create transaction record
   await Transaction.create({
     userId,
     type: "ASSET_ASSIGNMENT",
-    amount: Number(data.assignedValue),
+    amount: -Number(data.assignedValue), // Negative amount for deduction
     description: `Asset assignment: ${data.assetName} (${data.assetType})`,
     meta: {
       assetName: data.assetName,
@@ -204,10 +205,13 @@ exports.assignAsset = async (userId, data) => {
       quantity,
       purchasePrice: currentPrice,
       assetSymbol: assetSymbol,
-      logo: assetLogo // ✅ Store logo in transaction meta too
+      logo: assetLogo
     },
     created_at: new Date()
   });
+  
+  // ✅ Add logo to response
+  portfolio.dataValues.logo = assetLogo;
   
   return portfolio;
 };
