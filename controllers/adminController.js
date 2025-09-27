@@ -34,7 +34,6 @@ exports.createFirm = async (req, res) => {
 };
 
 
-
 // Upload firm profile picture
 // Upload firm profile picture
 exports.uploadFirmProfile = async (req, res) => {
@@ -234,33 +233,34 @@ exports.connectUserToFirm = async (req, res) => {
 
 // Add to adminController.js
 // Update firm crypto addresses
+// Update firm crypto addresses
 exports.updateFirmCryptoAddresses = async (req, res) => {
   try {
     const { firmId } = req.params;
     const { btcAddress, ethAddress, usdtAddress } = req.body;
-    
+
     const firm = await Firm.findByPk(firmId);
     if (!firm) return res.status(404).json({ error: "Firm not found" });
-    
-    const updates = {};
-    if (btcAddress !== undefined) updates.crypto_btc_address = btcAddress;
-    if (ethAddress !== undefined) updates.crypto_eth_address = ethAddress;
-    if (usdtAddress !== undefined) updates.crypto_usdt_address = usdtAddress;
-    
-    await Firm.update(updates, { where: { id: firmId } });
-    
-    res.json({ 
+
+    if (btcAddress !== undefined) firm.crypto_btc_address = btcAddress;
+    if (ethAddress !== undefined) firm.crypto_eth_address = ethAddress;
+    if (usdtAddress !== undefined) firm.crypto_usdt_address = usdtAddress;
+
+    await firm.save(); // ✅ persists to DB
+
+    res.json({
       message: "Crypto addresses updated successfully",
       addresses: {
-        BTC: btcAddress || firm.crypto_btc_address,
-        ETH: ethAddress || firm.crypto_eth_address,
-        USDT: usdtAddress || firm.crypto_usdt_address
+        BTC: firm.crypto_btc_address,
+        ETH: firm.crypto_eth_address,
+        USDT: firm.crypto_usdt_address
       }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Get firm crypto addresses
 exports.getFirmCryptoAddresses = async (req, res) => {
