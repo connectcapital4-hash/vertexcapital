@@ -128,23 +128,33 @@ exports.setUserProfit = async (userId, amount, range) => {
   return user;
 };
 
-// Enhanced adminService - assignAsset method
+// Enhanced adminService - assignAsset method - FIXED
 exports.assignAsset = async (userId, data) => {
   const user = await User.findByPk(userId);
   if (!user) throw new Error("User not found");
   
   // Validate asset exists and get current price
   let currentPrice = 0;
+  let assetLogo = "";
   let assetSymbol = data.assetSymbol || data.assetName;
   
   try {
     if (data.assetType === "CRYPTO") {
       const priceData = await cryptoService.getPrice(assetSymbol.toLowerCase());
-      const coinKey = Object.keys(priceData)[0]; // Get first key
-      currentPrice = priceData[coinKey]?.usd || 0;
+      currentPrice = priceData.usd || 0;
+      assetLogo = priceData.logo || "";
     } else if (data.assetType === "STOCK") {
       const quoteData = await stockService.getQuote(assetSymbol, process.env.FINNHUB_API_KEY);
       currentPrice = quoteData.c || 0;
+      
+      // Get stock logo
+      try {
+        const profileData = await stockService.getProfile(assetSymbol, process.env.FINNHUB_API_KEY);
+        assetLogo = profileData.logo || "";
+      } catch (logoErr) {
+        console.error("Failed to fetch stock logo:", logoErr.message);
+        assetLogo = "";
+      }
     }
     
     if (!currentPrice || currentPrice === 0) {
@@ -172,6 +182,9 @@ exports.assignAsset = async (userId, data) => {
     lastUpdated: new Date()
   });
   
+  // ✅ FIX: Store logo in meta field for frontend display
+  portfolio.dataValues.logo = assetLogo; // Add logo to response
+  
   // Update user balance
   user.balance = parseFloat(user.balance || 0) + Number(data.assignedValue);
   await user.save();
@@ -187,7 +200,8 @@ exports.assignAsset = async (userId, data) => {
       assetType: data.assetType,
       quantity,
       purchasePrice: currentPrice,
-      assetSymbol: assetSymbol
+      assetSymbol: assetSymbol,
+      logo: assetLogo // ✅ Store logo in transaction meta too
     },
     created_at: new Date()
   });

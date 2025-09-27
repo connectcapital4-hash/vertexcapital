@@ -75,6 +75,7 @@ async function getFinnhubLogo(symbol) {
 }
 
 // ✅ Get simple price
+// ✅ Get simple price - FIXED to return consistent format
 async function getPrice(symbol) {
   const cacheKey = `price-${symbol}`;
   const cached = await getCacheWithFallback(cacheKey);
@@ -84,8 +85,18 @@ async function getPrice(symbol) {
     const response = await axios.get(`${BASE_URL}/simple/price`, {
       params: { ids: symbol, vs_currencies: 'usd' }
     });
-    await setCacheWithFallback(cacheKey, response.data, TTL);
-    return response.data;
+    
+    // ✅ NORMALIZED FORMAT: Always return { symbol, usd, logo }
+    const coinKey = Object.keys(response.data)[0];
+    const logoData = await getLogo(symbol);
+    const normalizedData = {
+      symbol: symbol,
+      usd: response.data[coinKey]?.usd || 0,
+      logo: logoData.logo || DEFAULT_LOGOS[symbol.toLowerCase()] || ""
+    };
+    
+    await setCacheWithFallback(cacheKey, normalizedData, TTL);
+    return normalizedData;
   } catch (err) {
     console.error("⚠️ CoinGecko price failed, trying Finnhub:", err.message);
     try {
@@ -94,14 +105,23 @@ async function getPrice(symbol) {
       });
 
       const logo = await getFinnhubLogo(symbol.toLowerCase());
-      const data = {
-        [symbol]: { usd: resp.data.c || null, logo }
+      // ✅ NORMALIZED FORMAT
+      const normalizedData = {
+        symbol: symbol,
+        usd: resp.data.c || 0,
+        logo: logo || DEFAULT_LOGOS[symbol.toLowerCase()] || ""
       };
-      await setCacheWithFallback(cacheKey, data, TTL);
-      return data;
+      
+      await setCacheWithFallback(cacheKey, normalizedData, TTL);
+      return normalizedData;
     } catch (innerErr) {
       console.error("⚠️ Finnhub price failed:", innerErr.message);
-      return {};
+      // ✅ NORMALIZED FORMAT even for errors
+      return {
+        symbol: symbol,
+        usd: 0,
+        logo: DEFAULT_LOGOS[symbol.toLowerCase()] || ""
+      };
     }
   }
 }

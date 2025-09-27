@@ -33,12 +33,14 @@ const Portfolio = sequelize.define(
       type: DataTypes.FLOAT,
       allowNull: false,
     },
-    quantity: { 
+    quantity: {
       type: DataTypes.FLOAT,
+      allowNull: false,
       field: "quantity",
     },
     purchasePrice: {
       type: DataTypes.FLOAT,
+      allowNull: false,
       field: "purchase_price",
     },
     currentValue: {

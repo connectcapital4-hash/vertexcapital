@@ -3,7 +3,7 @@ const Portfolio = require("../models/Portfolio");
 const cryptoService = require("./cryptoService");
 const stockService = require("./stockService");
 
-// Update portfolio values with real-time market data
+// Update portfolio values with real-time market data - FIXED
 exports.updatePortfolioValues = async (userId) => {
   try {
     const portfolios = await Portfolio.findAll({ where: { userId } });
@@ -13,7 +13,7 @@ exports.updatePortfolioValues = async (userId) => {
       
       if (portfolio.assetType === "CRYPTO") {
         const priceData = await cryptoService.getPrice(portfolio.assetSymbol);
-        currentPrice = priceData[portfolio.assetSymbol]?.usd || 0;
+        currentPrice = priceData.usd || 0; // ✅ Use normalized format
       } else if (portfolio.assetType === "STOCK") {
         const quoteData = await stockService.getQuote(portfolio.assetSymbol, process.env.FINNHUB_API_KEY);
         currentPrice = quoteData.c || 0;

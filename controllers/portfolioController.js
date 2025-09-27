@@ -1,8 +1,10 @@
-// controllers/portfolioController.js
+// controllers/portfolioController.js - ENHANCED with logos
 const Portfolio = require("../models/Portfolio");
 const portfolioService = require("../services/portfolioService");
+const cryptoService = require("../services/cryptoService");
+const stockService = require("../services/stockService");
 
-// Get user portfolio with current values
+// Get user portfolio with current values and logos
 exports.getUserPortfolio = async (req, res) => {
   try {
     // Update portfolio values first
@@ -13,7 +15,32 @@ exports.getUserPortfolio = async (req, res) => {
       order: [['created_at', 'DESC']]
     });
     
-    res.json(portfolio);
+    // ✅ ENHANCE: Add logos to portfolio items
+    const portfolioWithLogos = await Promise.all(
+      portfolio.map(async (item) => {
+        let logo = "";
+        
+        try {
+          if (item.assetType === "CRYPTO") {
+            const logoData = await cryptoService.getLogo(item.assetSymbol.toLowerCase());
+            logo = logoData.logo || "";
+          } else if (item.assetType === "STOCK") {
+            const profileData = await stockService.getProfile(item.assetSymbol, process.env.FINNHUB_API_KEY);
+            logo = profileData.logo || "";
+          }
+        } catch (error) {
+          console.error(`Failed to fetch logo for ${item.assetSymbol}:`, error.message);
+          logo = "";
+        }
+        
+        return {
+          ...item.toJSON(),
+          logo: logo
+        };
+      })
+    );
+    
+    res.json(portfolioWithLogos);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -28,4 +55,3 @@ exports.getPortfolioValue = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
