@@ -3,6 +3,7 @@ const Payment = require("../models/Payment");
 const User = require("../models/User");
 const Firm = require("../models/Firm");
 const cryptoService = require("../services/cryptoService");
+const Transaction = require("../models/transaction");
 
 // Get payment addresses for a user's firm
 exports.getPaymentAddresses = async (req, res) => {
@@ -96,15 +97,18 @@ exports.confirmPayment = async (req, res) => {
   }
 };
 
-// Get user payment history
+// Get user payment history (from transaction table, CREDIT only)
 exports.getPaymentHistory = async (req, res) => {
   try {
-    const payments = await Payment.findAll({
-      where: { userId: req.user.id },
-      order: [['created_at', 'DESC']]
+    const transactions = await Transaction.findAll({
+      where: {
+        userId: req.user.id,
+        type: "CREDIT"
+      },
+      order: [["created_at", "DESC"]],
     });
-    
-    res.json(payments);
+
+    res.json(transactions);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
