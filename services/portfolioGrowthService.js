@@ -57,6 +57,7 @@ exports.applyDailyPortfolioGrowth = async () => {
   }
 };
 
+// services/portfolioGrowthService.js - MUST HAVE THIS FIXED VERSION
 // Update user balance based on total portfolio value - FIXED
 exports.updateUserBalanceFromPortfolio = async (userId) => {
   try {

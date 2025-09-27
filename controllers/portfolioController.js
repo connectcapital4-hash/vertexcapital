@@ -4,11 +4,11 @@ const portfolioService = require("../services/portfolioService");
 const cryptoService = require("../services/cryptoService");
 const stockService = require("../services/stockService");
 
-// Get user portfolio with current values and logos
+// Get user portfolio with current values and logos - FIXED
 exports.getUserPortfolio = async (req, res) => {
   try {
-    // Update portfolio values first
-    await portfolioService.updatePortfolioValues(req.user.id);
+    // ❌ REMOVE THIS LINE - it may be calling balance update logic
+    // await portfolioService.updatePortfolioValues(req.user.id);
     
     const portfolio = await Portfolio.findAll({
       where: { userId: req.user.id },
