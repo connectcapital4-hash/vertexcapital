@@ -57,7 +57,7 @@ exports.applyDailyPortfolioGrowth = async () => {
   }
 };
 
-// Update user balance based on total portfolio value
+// Update user balance based on total portfolio value - FIXED
 exports.updateUserBalanceFromPortfolio = async (userId) => {
   try {
     const portfolios = await Portfolio.findAll({ where: { userId } });
@@ -68,27 +68,31 @@ exports.updateUserBalanceFromPortfolio = async (userId) => {
     const user = await User.findByPk(userId);
     if (user) {
       const previousBalance = parseFloat(user.balance) || 0;
-      const newBalance = parseFloat(totalPortfolioValue.toFixed(2));
       
-      // Update balance to reflect portfolio value
-      user.balance = newBalance;
-      await user.save();
+      // ✅ FIX: Only add the growth amount, don't overwrite the entire balance
+      const growthAmount = parseFloat((totalPortfolioValue - previousBalance).toFixed(2));
       
-      // Only create transaction if there's actual growth
-      if (newBalance > previousBalance) {
+      if (growthAmount > 0) {
+        // Add only the growth to the current balance
+        user.balance = parseFloat((previousBalance + growthAmount).toFixed(2));
+        await user.save();
+        
+        // Create transaction for the growth amount only
         await Transaction.create({
           userId,
           type: "PORTFOLIO_GROWTH",
-          amount: parseFloat((newBalance - previousBalance).toFixed(2)),
+          amount: growthAmount,
           description: "Daily 10% portfolio growth applied",
           meta: {
             previousBalance: previousBalance,
-            newBalance: newBalance,
+            newBalance: user.balance,
             growthPercentage: 10,
             timestamp: new Date()
           },
           created_at: new Date()
         });
+        
+        console.log(`Added portfolio growth of ${growthAmount} to user ${userId}`);
       }
     }
     
