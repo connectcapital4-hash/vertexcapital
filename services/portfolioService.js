@@ -2,8 +2,6 @@
 const Portfolio = require("../models/Portfolio");
 const cryptoService = require("./cryptoService");
 const stockService = require("./stockService");
-// ❌ REMOVE this import since we're not updating balances here
-// const portfolioGrowthService = require("./portfolioGrowthService");
 
 // Update portfolio values with real-time market data - FIXED
 exports.updatePortfolioValues = async (userId) => {
@@ -33,9 +31,6 @@ exports.updatePortfolioValues = async (userId) => {
       }
     }
     
-    // ❌ REMOVE THIS LINE - don't update user balance here
-    // await portfolioGrowthService.updateUserBalanceFromPortfolio(userId);
-    
     return true;
   } catch (error) {
     console.error("Error updating portfolio values:", error);
@@ -43,17 +38,17 @@ exports.updatePortfolioValues = async (userId) => {
   }
 };
 
-// Calculate total portfolio value - FIXED
+// Calculate total portfolio value - FIXED to use assigned_value
 exports.getTotalPortfolioValue = async (userId) => {
   try {
-    // ❌ REMOVE this line or keep it but it won't affect balances anymore
-    // await this.updatePortfolioValues(userId);
-    
     const portfolios = await Portfolio.findAll({ where: { userId } });
     
-    return portfolios.reduce((total, portfolio) => {
-      return total + (portfolio.currentValue || 0);
+    // Sum of assigned_value from all portfolio items
+    const totalAssignedValue = portfolios.reduce((total, portfolio) => {
+      return total + (portfolio.assigned_value || 0);
     }, 0);
+    
+    return totalAssignedValue;
   } catch (error) {
     console.error("Error calculating portfolio value:", error);
     return 0;
@@ -64,16 +59,62 @@ exports.getTotalPortfolioValue = async (userId) => {
 exports.getPortfolioWithGrowth = async (userId) => {
   try {
     const portfolios = await Portfolio.findAll({ where: { userId } });
-    const totalValue = await this.getTotalPortfolioValue(userId);
+    const totalAssignedValue = await this.getTotalPortfolioValue(userId);
+    
+    // Calculate growth based on assigned_value
+    const dailyGrowth = totalAssignedValue * 0.10; // 10% daily growth
+    const projectedValue = totalAssignedValue * 1.10; // Projected value after 10% growth
     
     return {
       portfolios,
-      totalValue,
-      dailyGrowth: totalValue * 0.10, // Projected daily growth
-      projectedValue: totalValue * 1.10 // Projected value after growth
+      totalAssignedValue,
+      dailyGrowth,
+      projectedValue
     };
   } catch (error) {
     console.error("Error getting portfolio with growth:", error);
-    return { portfolios: [], totalValue: 0, dailyGrowth: 0, projectedValue: 0 };
+    return { portfolios: [], totalAssignedValue: 0, dailyGrowth: 0, projectedValue: 0 };
+  }
+};
+
+// NEW: Get complete portfolio summary including assigned value and growth
+exports.getPortfolioSummary = async (userId) => {
+  try {
+    const portfolios = await Portfolio.findAll({ where: { userId } });
+    
+    // Calculate totals
+    const totalAssignedValue = portfolios.reduce((total, portfolio) => {
+      return total + (portfolio.assigned_value || 0);
+    }, 0);
+    
+    const totalCurrentValue = portfolios.reduce((total, portfolio) => {
+      return total + (portfolio.current_value || 0);
+    }, 0);
+    
+    const totalProfitLoss = portfolios.reduce((total, portfolio) => {
+      return total + (portfolio.profit_loss || 0);
+    }, 0);
+    
+    const dailyGrowth = totalAssignedValue * 0.10;
+    const projectedValue = totalAssignedValue * 1.10;
+    
+    return {
+      totalAssignedValue,
+      totalCurrentValue,
+      totalProfitLoss,
+      dailyGrowth,
+      projectedValue,
+      portfolioCount: portfolios.length
+    };
+  } catch (error) {
+    console.error("Error getting portfolio summary:", error);
+    return {
+      totalAssignedValue: 0,
+      totalCurrentValue: 0,
+      totalProfitLoss: 0,
+      dailyGrowth: 0,
+      projectedValue: 0,
+      portfolioCount: 0
+    };
   }
 };
