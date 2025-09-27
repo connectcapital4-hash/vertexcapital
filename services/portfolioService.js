@@ -1,10 +1,11 @@
-// services/portfolioService.js
+// services/portfolioService.js - FIXED
 const Portfolio = require("../models/Portfolio");
 const cryptoService = require("./cryptoService");
 const stockService = require("./stockService");
-const portfolioGrowthService = require("./portfolioGrowthService");
+// ❌ REMOVE this import since we're not updating balances here
+// const portfolioGrowthService = require("./portfolioGrowthService");
 
-// Update portfolio values with real-time market data
+// Update portfolio values with real-time market data - FIXED
 exports.updatePortfolioValues = async (userId) => {
   try {
     const portfolios = await Portfolio.findAll({ where: { userId } });
@@ -32,8 +33,8 @@ exports.updatePortfolioValues = async (userId) => {
       }
     }
     
-    // Update user balance to reflect new portfolio values
-    await portfolioGrowthService.updateUserBalanceFromPortfolio(userId);
+    // ❌ REMOVE THIS LINE - don't update user balance here
+    // await portfolioGrowthService.updateUserBalanceFromPortfolio(userId);
     
     return true;
   } catch (error) {
@@ -42,10 +43,12 @@ exports.updatePortfolioValues = async (userId) => {
   }
 };
 
-// Calculate total portfolio value
+// Calculate total portfolio value - FIXED
 exports.getTotalPortfolioValue = async (userId) => {
   try {
-    await this.updatePortfolioValues(userId);
+    // ❌ REMOVE this line or keep it but it won't affect balances anymore
+    // await this.updatePortfolioValues(userId);
+    
     const portfolios = await Portfolio.findAll({ where: { userId } });
     
     return portfolios.reduce((total, portfolio) => {
@@ -57,7 +60,7 @@ exports.getTotalPortfolioValue = async (userId) => {
   }
 };
 
-// Get portfolio with growth calculation
+// Get portfolio with growth calculation - FIXED
 exports.getPortfolioWithGrowth = async (userId) => {
   try {
     const portfolios = await Portfolio.findAll({ where: { userId } });
