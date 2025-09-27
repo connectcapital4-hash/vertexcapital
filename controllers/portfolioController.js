@@ -1,22 +1,20 @@
-// controllers/portfolioController.js - FIXED
+// controllers/portfolioController.js - ENHANCED with logos and growth
 const Portfolio = require("../models/Portfolio");
 const portfolioService = require("../services/portfolioService");
 const cryptoService = require("../services/cryptoService");
 const stockService = require("../services/stockService");
 
-// Get user portfolio with current values and logos - FIXED
+// Get user portfolio with logos
 exports.getUserPortfolio = async (req, res) => {
   try {
     const portfolio = await Portfolio.findAll({
       where: { userId: req.user.id },
       order: [['created_at', 'DESC']]
     });
-    
-    // Add logos to portfolio items
+
     const portfolioWithLogos = await Promise.all(
       portfolio.map(async (item) => {
         let logo = "";
-        
         try {
           if (item.assetType === "CRYPTO") {
             const logoData = await cryptoService.getLogo(item.assetSymbol.toLowerCase());
@@ -29,44 +27,25 @@ exports.getUserPortfolio = async (req, res) => {
           console.error(`Failed to fetch logo for ${item.assetSymbol}:`, error.message);
           logo = "";
         }
-        
+
         return {
           ...item.toJSON(),
           logo: logo
         };
       })
     );
-    
+
     res.json(portfolioWithLogos);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get total portfolio value - FIXED to use assigned_value
+// Get total portfolio value (assigned + growth)
 exports.getPortfolioValue = async (req, res) => {
   try {
-    const totalAssignedValue = await portfolioService.getTotalPortfolioValue(req.user.id);
-    
-    // Calculate growth based on assigned_value
-    const dailyGrowth = totalAssignedValue * 0.10;
-    const totalValueWithGrowth = totalAssignedValue + dailyGrowth;
-    
-    res.json({ 
-      totalAssignedValue,
-      dailyGrowth,
-      totalValueWithGrowth 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// NEW: Get complete portfolio summary
-exports.getPortfolioSummary = async (req, res) => {
-  try {
-    const summary = await portfolioService.getPortfolioSummary(req.user.id);
-    res.json(summary);
+    const totals = await portfolioService.getTotalPortfolioValue(req.user.id);
+    res.json(totals);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
