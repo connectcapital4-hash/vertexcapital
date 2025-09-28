@@ -77,25 +77,26 @@ exports.withdrawPortfolioAsset = async (userId, withdrawalData) => {
     const newBalance = parseFloat((prevBalance + saleValue).toFixed(8));
     await user.update({ balance: newBalance }, { transaction: t });
 
-    // In your withdrawPortfolioAsset function, update the PortfolioWithdrawal.create call:
+    // ✅ Create portfolio withdrawal record
     const withdrawal = await PortfolioWithdrawal.create({
-       user_id: userId,  // Changed from userId
-       portfolio_id: portfolioId,  // Changed from portfolioId
-       asset_type: portfolio.assetType,  // Changed from assetType
-       asset_symbol: portfolio.assetSymbol,  // Changed from assetSymbol
-       asset_name: portfolio.assetName,  // Changed from assetName
-       quantity_sold: quantityToSell,  // Changed from quantitySold
-       sale_price: currentPrice,  // Changed from salePrice
-       total_amount: saleValue,  // Changed from totalAmount
-       sale_type: saleType,  // Changed from saleType
-       original_quantity: originalQuantity,  // Changed from originalQuantity
-       remaining_quantity: remainingQuantity,  // Changed from remainingQuantity
-       status: "COMPLETED"
+      user_id: userId,
+      portfolio_id: portfolioId,
+      asset_type: portfolio.assetType,
+      asset_symbol: portfolio.assetSymbol,
+      asset_name: portfolio.assetName,
+      quantity_sold: quantityToSell,
+      sale_price: currentPrice,
+      total_amount: saleValue,
+      sale_type: saleType,
+      original_quantity: originalQuantity,
+      remaining_quantity: remainingQuantity,
+      status: "COMPLETED"
     }, { transaction: t });
 
+    // ✅ FIXED Transaction.create to match model
     await Transaction.create({
-      user_id: userId,
-      type: "PORTFOLIO_WITHDRAWAL",
+      userId: userId,  // ✅ camelCase to match model
+      type: "WITHDRAW", // ✅ must match ENUM in model
       amount: saleValue,
       description: `Sold ${quantityToSell} ${portfolio.assetSymbol} from portfolio`,
       meta: {
@@ -107,7 +108,7 @@ exports.withdrawPortfolioAsset = async (userId, withdrawalData) => {
         saleType,
         withdrawalId: withdrawal.id
       },
-      created_at: new Date()
+      createdAt: new Date() // ✅ model expects createdAt (maps to created_at in DB)
     }, { transaction: t });
 
     await t.commit();
