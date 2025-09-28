@@ -46,9 +46,12 @@ exports.getUserPortfolio = async (req, res) => {
   }
 };
 
-// Get total portfolio value
+// Get total portfolio value - FIXED
 exports.getPortfolioValue = async (req, res) => {
   try {
+    // Ensure portfolio values are updated before calculating total
+    await portfolioService.updatePortfolioValues(req.user.id);
+    
     const totalValue = await portfolioService.getTotalPortfolioValue(req.user.id);
     res.json({ totalValue });
   } catch (error) {

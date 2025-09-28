@@ -46,13 +46,17 @@ exports.updatePortfolioValues = async (userId) => {
 // Calculate total portfolio value - FIXED
 exports.getTotalPortfolioValue = async (userId) => {
   try {
-    // ❌ REMOVE this line or keep it but it won't affect balances anymore
-    // await this.updatePortfolioValues(userId);
+    // First update portfolio values with current market data
+    await this.updatePortfolioValues(userId);
     
-    const portfolios = await Portfolio.findAll({ where: { userId } });
+    // Then fetch the updated portfolios and sum current_value
+    const portfolios = await Portfolio.findAll({ 
+      where: { userId },
+      attributes: ['currentValue']
+    });
     
     return portfolios.reduce((total, portfolio) => {
-      return total + (portfolio.currentValue || 0);
+      return total + parseFloat(portfolio.currentValue || 0);
     }, 0);
   } catch (error) {
     console.error("Error calculating portfolio value:", error);
