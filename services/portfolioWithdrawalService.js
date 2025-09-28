@@ -146,19 +146,18 @@ exports.getAvailablePortfolio = async (userId) => {
   try {
     const portfolios = await Portfolio.findAll({
       where: {
-        user_id: userId,
+        userId, // ✅ camelCase from model
         quantity: { [Op.gt]: 0 }
       },
       attributes: [
         "id",
-        "asset_name",
-        "asset_symbol",
-        "asset_type",
+        "assetName",
+        "assetSymbol",
+        "assetType",
         "quantity",
-        "current_value",
-        "purchase_price",
-        "profit_loss",
-        "sold_quantity"
+        "currentValue",
+        "purchasePrice",
+        "profitLoss"
       ]
     });
 
@@ -166,14 +165,14 @@ exports.getAvailablePortfolio = async (userId) => {
       const q = toFloat(p.quantity);
       return {
         id: p.id,
-        assetName: p.asset_name,
-        assetSymbol: p.asset_symbol,
-        assetType: p.asset_type,
+        assetName: p.assetName, // ✅ camelCase
+        assetSymbol: p.assetSymbol,
+        assetType: p.assetType,
         availableQuantity: q,
-        currentValue: toFloat(p.current_value),
-        purchasePrice: toFloat(p.purchase_price),
-        profitLoss: toFloat(p.profit_loss),
-        currentPrice: q > 0 ? parseFloat((toFloat(p.current_value) / q).toFixed(8)) : 0
+        currentValue: toFloat(p.currentValue), // ✅ camelCase
+        purchasePrice: toFloat(p.purchasePrice),
+        profitLoss: toFloat(p.profitLoss),
+        currentPrice: q > 0 ? parseFloat((toFloat(p.currentValue) / q).toFixed(8)) : 0
       };
     });
   } catch (error) {
