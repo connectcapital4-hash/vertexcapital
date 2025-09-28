@@ -464,3 +464,29 @@ exports.searchFirms = async (req, res) => {
   }
 };
 
+// Get all news (ordered by latest first)
+exports.getNews = async (req, res) => {
+  try {
+    const News = require("../models/news");
+
+    const news = await News.findAll({
+      attributes: [
+        "id",
+        "title",
+        "body",
+        "image_url",
+        "link",
+        "published_by",
+        "created_at"
+      ],
+      order: [["created_at", "DESC"]],
+    });
+
+    return res.json({ news });
+  } catch (err) {
+    console.error("❌ Failed to fetch news:", err.message);
+    return res.status(500).json({ message: "Failed to fetch news", error: err.message });
+  }
+};
+
+

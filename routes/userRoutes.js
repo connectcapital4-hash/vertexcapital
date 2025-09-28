@@ -30,6 +30,8 @@ router.post("/reset-password", userController.resetPassword);
 // userRoutes.js search firms
 router.get("/search-firms", userController.searchFirms);
 
+// News endpoint (public)
+router.get("/news", userController.getNews);
 
 
 
