@@ -48,21 +48,17 @@ exports.getTotalPortfolioValue = async (userId) => {
   try {
     // ❌ REMOVE this line or keep it but it won't affect balances anymore
     // await this.updatePortfolioValues(userId);
-
+    
     const portfolios = await Portfolio.findAll({ where: { userId } });
-
-    const totalValue = portfolios.reduce((total, portfolio) => {
+    
+    return portfolios.reduce((total, portfolio) => {
       return total + (portfolio.currentValue || 0);
     }, 0);
-
-    // ✅ Fix: ensure proper float with 2 decimals
-    return parseFloat(totalValue.toFixed(2));
   } catch (error) {
     console.error("Error calculating portfolio value:", error);
     return 0;
   }
 };
-
 
 // Get portfolio with growth calculation - FIXED
 exports.getPortfolioWithGrowth = async (userId) => {
