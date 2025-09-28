@@ -5,8 +5,8 @@ const News = sequelize.define(
   "News",
   {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
     title: {
@@ -25,7 +25,7 @@ const News = sequelize.define(
       type: DataTypes.STRING,
     },
     publishedBy: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       field: "published_by", // 👈 map to DB column
     },
   },
