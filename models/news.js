@@ -31,7 +31,7 @@ const News = sequelize.define(
   },
   {
     tableName: "news",   // 👈 match lowercase DB table
-    timestamps: true,    // createdAt + updatedAt
+    timestamps: false,     // ❌ don’t auto-manage timestamps
     underscored: true,   // auto-map camelCase ↔ snake_case
   }
 );
