@@ -356,14 +356,15 @@ exports.getAllFirms = async () => {
     order: [["created_at", "DESC"]]
   });
 };
+
 // adminService.js
-exports.getNewsByAdmin = async (adminId) => {
+exports.getNewsByAdmin = async () => {
   return await News.findAll({
-    where: { published_by: adminId },
     order: [["created_at", "DESC"]],
     attributes: ["id", "title", "body", "image_url", "link", "created_at"],
   });
 };
+
 
 // Delete user
 exports.deleteUser = async (userId) => {
