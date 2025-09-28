@@ -177,7 +177,8 @@ exports.me = async (req, res) => {
         "name",
         "email",
         "status",
-        "balance",
+        // format balance with to_char
+        [User.sequelize.literal(`to_char("User"."balance", 'FM999,999,999,990.00')`), "balance"],
         "account_level",
         "connected",
         "profile_picture",
@@ -206,6 +207,7 @@ exports.me = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch user profile", error: err.message });
   }
 };
+
 
 
 // 🔹 Update profile picture
