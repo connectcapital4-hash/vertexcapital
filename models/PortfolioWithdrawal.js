@@ -9,73 +9,59 @@ const PortfolioWithdrawal = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    userId: {
+    user_id: {  // Changed from userId
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: "user_id",
     },
-    portfolioId: {
+    portfolio_id: {  // Changed from portfolioId
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: "portfolio_id",
     },
-    assetType: {
+    asset_type: {  // Changed from assetType
       type: DataTypes.STRING,
       allowNull: false,
-      field: "asset_type",
     },
-    assetSymbol: {
+    asset_symbol: {  // Changed from assetSymbol
       type: DataTypes.STRING,
       allowNull: false,
-      field: "asset_symbol",
     },
-    assetName: {
+    asset_name: {  // Changed from assetName
       type: DataTypes.STRING,
       allowNull: false,
-      field: "asset_name",
     },
-    quantitySold: {
+    quantity_sold: {  // Changed from quantitySold
       type: DataTypes.FLOAT,
       allowNull: false,
-      field: "quantity_sold",
     },
-    salePrice: {
+    sale_price: {  // Changed from salePrice
       type: DataTypes.FLOAT,
       allowNull: false,
-      field: "sale_price",
     },
-    totalAmount: {
+    total_amount: {  // Changed from totalAmount
       type: DataTypes.FLOAT,
       allowNull: false,
-      field: "total_amount",
     },
-    saleType: {
+    sale_type: {  // Changed from saleType
       type: DataTypes.ENUM("QUANTITY", "PERCENTAGE"),
       allowNull: false,
-      field: "sale_type",
     },
-    originalQuantity: {
+    original_quantity: {  // Changed from originalQuantity
       type: DataTypes.FLOAT,
       allowNull: false,
-      field: "original_quantity",
     },
-    remainingQuantity: {
+    remaining_quantity: {  // Changed from remainingQuantity
       type: DataTypes.FLOAT,
       allowNull: false,
-      field: "remaining_quantity",
     },
     status: {
       type: DataTypes.ENUM("PENDING", "COMPLETED", "FAILED"),
       defaultValue: "COMPLETED",
-      field: "status",
     },
-    createdAt: {
+    created_at: {  // Changed from createdAt
       type: DataTypes.DATE,
-      field: "created_at",
     },
-    updatedAt: {
+    updated_at: {  // Changed from updatedAt
       type: DataTypes.DATE,
-      field: "updated_at",
     },
   },
   {

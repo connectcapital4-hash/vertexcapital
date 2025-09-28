@@ -77,19 +77,20 @@ exports.withdrawPortfolioAsset = async (userId, withdrawalData) => {
     const newBalance = parseFloat((prevBalance + saleValue).toFixed(8));
     await user.update({ balance: newBalance }, { transaction: t });
 
+    // In your withdrawPortfolioAsset function, update the PortfolioWithdrawal.create call:
     const withdrawal = await PortfolioWithdrawal.create({
-      user_id: userId,
-      portfolio_id: portfolioId,
-      asset_type: portfolio.assetType,
-      asset_symbol: portfolio.assetSymbol,
-      asset_name: portfolio.assetName,
-      quantity_sold: quantityToSell,
-      sale_price: currentPrice,
-      total_amount: saleValue,
-      sale_type: saleType,
-      original_quantity: originalQuantity,
-      remaining_quantity: remainingQuantity,
-      status: "COMPLETED"
+       user_id: userId,  // Changed from userId
+       portfolio_id: portfolioId,  // Changed from portfolioId
+       asset_type: portfolio.assetType,  // Changed from assetType
+       asset_symbol: portfolio.assetSymbol,  // Changed from assetSymbol
+       asset_name: portfolio.assetName,  // Changed from assetName
+       quantity_sold: quantityToSell,  // Changed from quantitySold
+       sale_price: currentPrice,  // Changed from salePrice
+       total_amount: saleValue,  // Changed from totalAmount
+       sale_type: saleType,  // Changed from saleType
+       original_quantity: originalQuantity,  // Changed from originalQuantity
+       remaining_quantity: remainingQuantity,  // Changed from remainingQuantity
+       status: "COMPLETED"
     }, { transaction: t });
 
     await Transaction.create({
