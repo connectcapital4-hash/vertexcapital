@@ -7,7 +7,6 @@ require("dotenv").config();
 
 const app = express();
 
-
 // ✅ Trust proxy so req.ip uses x-forwarded-for if behind a proxy
 app.set("trust proxy", true);
 
@@ -41,6 +40,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 // ✅ Import new services
 const cronService = require("./services/cronService");
 const portfolioGrowthRoutes = require("./routes/portfolioGrowthRoutes");
+const portfolioWithdrawalRoutes = require("./routes/portfolioWithdrawalRoutes");
 
 // ✅ Protected admin routes
 app.use(
@@ -59,6 +59,7 @@ app.use("/api/withdrawals", withdrawalRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/portfolio-growth", portfolioGrowthRoutes);
+app.use("/api/portfolio-withdrawal", portfolioWithdrawalRoutes);
 
 // ✅ Health route (for uptime monitoring)
 app.get("/health", (req, res) => res.status(200).send("OK"));
