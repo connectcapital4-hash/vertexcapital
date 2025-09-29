@@ -218,13 +218,27 @@ exports.assignAsset = async (userId, data) => {
 
 // Upgrade account
 exports.upgradeUserAccount = async (userId, level) => {
+  console.log(`🔄 Starting upgrade for user ${userId} to level: ${level}`);
+  
   const user = await User.findByPk(userId);
   if (!user) throw new Error("User not found");
+  
+  console.log(`📊 Before update - account_level: ${user.account_level}, status: ${user.status}`);
+  
   const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
 
+  // Update account_level
   user.account_level = level;
+  
+  // Save and wait for completion
   await user.save();
+  
+  // Force reload from database to verify
+  await user.reload();
+  
+  console.log(`📊 After update - account_level: ${user.account_level}, status: ${user.status}`);
 
+  // Send email
   await Email.sendAccountUpgraded({
     to: user.email,
     userName: user.fullName || user.name,
@@ -232,6 +246,8 @@ exports.upgradeUserAccount = async (userId, level) => {
     level,
   });
 
+  console.log(`📧 Upgrade email sent to ${user.email}`);
+  
   return user;
 };
 

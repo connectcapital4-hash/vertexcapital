@@ -7,10 +7,10 @@ const Portfolio = require("./Portfolio");
 
 const User = sequelize.define("User", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  firm_id: { type: DataTypes.INTEGER, allowNull: true }, // allow null until connected
+  firm_id: { type: DataTypes.INTEGER, allowNull: true },
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
-  password_hash: { type: DataTypes.STRING, allowNull: true }, // ✅ FIXED (allow null)
+  password_hash: { type: DataTypes.STRING, allowNull: true },
   status: {
     type: DataTypes.ENUM("DEFAULT", "STANDARD", "PREMIUM", "LIFETIME", "SUSPENDED"),
     defaultValue: "DEFAULT",
@@ -23,7 +23,10 @@ const User = sequelize.define("User", {
       return rawValue === null ? 0 : parseFloat(rawValue);
     }
   },
-  account_level: { type: DataTypes.STRING, defaultValue: "DEFAULT" },
+  account_level: { 
+    type: DataTypes.ENUM("DEFAULT", "STANDARD", "PREMIUM", "LIFETIME", "SUSPENDED"),
+    defaultValue: "DEFAULT" 
+  },
   connected: { type: DataTypes.BOOLEAN, defaultValue: false },
   otp: { type: DataTypes.STRING, allowNull: true },
   otp_expiry: { type: DataTypes.DATE, allowNull: true },
@@ -36,11 +39,10 @@ const User = sequelize.define("User", {
   timestamps: false
 });
 
-// In your User model or association file
+// Associations
 User.hasMany(Withdrawal, { foreignKey: "user_id", as: "withdrawals" });
 Withdrawal.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.belongsTo(Firm, { foreignKey: "firm_id", as: "firm" });
-// ✅ ADD THIS
 User.hasMany(Portfolio, { foreignKey: "user_id", as: "portfolio" });
 Portfolio.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
