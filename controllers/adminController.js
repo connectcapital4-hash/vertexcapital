@@ -138,10 +138,10 @@ exports.upgradeUserAccount = async (req, res) => {
 
     try {
       await sendAccountUpgraded({
-        to: result.user.email,
+        to: result.email, // Changed from result.user.email to result.email
         level,
       });
-      console.log(`📧 Account upgraded email sent to ${result.user.email}`);
+      console.log(`📧 Account upgraded email sent to ${result.email}`);
     } catch (mailErr) {
       console.error("❌ Upgrade email failed:", mailErr.message);
     }
@@ -328,12 +328,13 @@ exports.getAllFirms = async (req, res) => {
 // adminController.js
 exports.getAdminNews = async (req, res) => {
   try {
-    const news = await adminService.getNewsByAdmin(req.admin.id);
+    const news = await adminService.getNewsByAdmin();
     res.json(news);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // New: Fetch login activities
 exports.getLoginActivities = async (req, res) => {
