@@ -303,8 +303,8 @@ exports.createNews = async (data, file, adminId) => {
     title: data.title,
     body: data.body,
     link: data.link || null,
-    image_url: file?.path || null, // ✅ Cloudinary URL
-    published_by: adminId,
+    imageUrl: file?.path || null, // ✅ use model field name
+    publishedBy: adminId,
     created_at: new Date()
   });
 };
@@ -314,8 +314,15 @@ exports.editNews = async (newsId, data, file) => {
   const news = await News.findByPk(newsId);
   if (!news) throw new Error("News not found");
 
-  Object.assign(news, data);
-  if (file?.path) news.image_url = file.path; // ✅ fixed field
+  Object.assign(news, {
+    title: data.title ?? news.title,
+    body: data.body ?? news.body,
+    link: data.link ?? news.link,
+  });
+
+  if (file?.path) {
+    news.imageUrl = file.path; // ✅ use model field name
+  }
 
   await news.save();
   return news;
