@@ -239,6 +239,18 @@ exports.editNews = async (req, res) => {
   }
 };
 
+// Delete news
+exports.deleteNews = async (req, res) => {
+  try {
+    const { newsId } = req.params;
+    const result = await adminService.deleteNews(newsId);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 
 // Connect existing user to firm
 exports.connectUserToFirm = async (req, res) => {

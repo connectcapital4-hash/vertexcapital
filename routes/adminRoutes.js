@@ -34,6 +34,8 @@ router.post("/user/:userId/asset", adminController.assignAsset);
 // News
 router.post("/news", upload.single("image"), adminController.createNews);
 router.put("/news/:newsId", upload.single("image"), adminController.editNews);
+router.delete("/news/:newsId", adminController.deleteNews);
+
 
 // connect existing user to firm
 router.post("/user/:userId/connect", adminController.connectUserToFirm);

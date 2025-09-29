@@ -333,6 +333,16 @@ exports.editNews = async (newsId, data, file) => {
   return news;
 };
 
+// Delete news
+exports.deleteNews = async (newsId) => {
+  const news = await News.findByPk(newsId);
+  if (!news) throw new Error("News not found");
+
+  await news.destroy();
+  return { message: "News deleted successfully" };
+};
+
+
 // Get firm by ID
 exports.getFirmById = async (firmId) => {
   const firm = await Firm.findByPk(firmId);
