@@ -32,6 +32,7 @@ const User = sequelize.define("User", {
   otp_expiry: { type: DataTypes.DATE, allowNull: true },
   otp_request_count: { type: DataTypes.INTEGER, defaultValue: 0 },
   otp_request_reset_time: { type: DataTypes.DATE, allowNull: true },
+  profile_picture: { type: DataTypes.TEXT, allowNull: true },  // 👈 ADD THIS
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 }, {
   tableName: "user",
