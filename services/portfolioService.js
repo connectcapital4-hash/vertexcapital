@@ -8,38 +8,32 @@ const stockService = require("./stockService");
 // Update portfolio values with real-time market data - FIXED
 exports.updatePortfolioValues = async (userId) => {
   try {
-    // Fetch all portfolios for the user
     const portfolios = await Portfolio.findAll({ where: { userId } });
     
     for (let portfolio of portfolios) {
-      // Skip portfolios with current_value 0
-      if (portfolio.current_value === 0) continue;
-
-      let currentPrice = 0;
-
-      // Fetch current price based on asset type
-      if (portfolio.asset_type === "CRYPTO") {
-        const priceData = await cryptoService.getPrice(portfolio.asset_symbol);
-        currentPrice = priceData?.usd || 0;
-      } else if (portfolio.asset_type === "STOCK") {
-        const quoteData = await stockService.getQuote(portfolio.asset_symbol, process.env.FINNHUB_API_KEY);
-        currentPrice = quoteData?.c || 0;
+      let currentPrice;
+      
+      if (portfolio.assetType === "CRYPTO") {
+        const priceData = await cryptoService.getPrice(portfolio.assetSymbol);
+        currentPrice = priceData.usd || 0;
+      } else if (portfolio.assetType === "STOCK") {
+        const quoteData = await stockService.getQuote(portfolio.assetSymbol, process.env.FINNHUB_API_KEY);
+        currentPrice = quoteData.c || 0;
       }
-
-      // Update portfolio only if currentPrice is valid
-      if (currentPrice > 0) {
+      
+      if (currentPrice) {
         const currentValue = portfolio.quantity * currentPrice;
-        const profitLoss = currentValue - (portfolio.quantity * portfolio.purchase_price);
+        const profitLoss = currentValue - (portfolio.quantity * portfolio.purchasePrice);
         
         await portfolio.update({
-          current_value: currentValue,
-          profit_loss: profitLoss,
-          last_updated: new Date()
+          currentValue,
+          profitLoss,
+          lastUpdated: new Date()
         });
       }
     }
     
-    // ❌ DO NOT update user balance here
+    // ❌ REMOVE THIS LINE - don't update user balance here
     // await portfolioGrowthService.updateUserBalanceFromPortfolio(userId);
     
     return true;
@@ -48,7 +42,6 @@ exports.updatePortfolioValues = async (userId) => {
     return false;
   }
 };
-
 
 // Calculate total portfolio value - FIXED
 exports.getTotalPortfolioValue = async (userId) => {
