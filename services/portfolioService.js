@@ -2,13 +2,21 @@
 const Portfolio = require("../models/Portfolio");
 const cryptoService = require("./cryptoService");
 const stockService = require("./stockService");
+const { Op } = require("sequelize");
+
 // ❌ REMOVE this import since we're not updating balances here
 // const portfolioGrowthService = require("./portfolioGrowthService");
 
 // Update portfolio values with real-time market data - FIXED
 exports.updatePortfolioValues = async (userId) => {
   try {
-    const portfolios = await Portfolio.findAll({ where: { userId } });
+    // Only fetch portfolios that have NOT been withdrawn (current_value > 0)
+    const portfolios = await Portfolio.findAll({ 
+      where: { 
+        userId,
+        current_value: { [Op.gt]: 0 }   // Exclude withdrawn portfolios
+      } 
+    });
     
     for (let portfolio of portfolios) {
       let currentPrice;
@@ -17,7 +25,10 @@ exports.updatePortfolioValues = async (userId) => {
         const priceData = await cryptoService.getPrice(portfolio.assetSymbol);
         currentPrice = priceData.usd || 0;
       } else if (portfolio.assetType === "STOCK") {
-        const quoteData = await stockService.getQuote(portfolio.assetSymbol, process.env.FINNHUB_API_KEY);
+        const quoteData = await stockService.getQuote(
+          portfolio.assetSymbol, 
+          process.env.FINNHUB_API_KEY
+        );
         currentPrice = quoteData.c || 0;
       }
       
