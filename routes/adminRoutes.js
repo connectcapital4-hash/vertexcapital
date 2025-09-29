@@ -1,20 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const adminController = require("../controllers/adminController");
-const upload = require("../middleware/upload");
-
-
-// Store uploads locally (or configure Cloudinary/S3 if needed)
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // make sure "uploads" folder exists
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
-});
-
-const upload = multer({ storage });
+const upload = require("../middleware/upload");  // ✅ use your middleware only
 
 
 // Firm management
@@ -31,10 +18,9 @@ router.post(
   adminController.uploadFirmProfile
 );
 
-
 // Users inside a firm
 router.post("/firm/:firmId/user", adminController.createUserInFirm);
-router.patch("/user/:userId/status", adminController.updateUserStatus); // ✅ fixed + added
+router.patch("/user/:userId/status", adminController.updateUserStatus);
 router.patch("/user/:userId/upgrade", adminController.upgradeUserAccount);
 router.patch("/user/:userId/suspend", adminController.suspendUser);
 
@@ -75,10 +61,8 @@ router.get("/news", adminController.getAdminNews);
 router.get("/logins", adminController.getLoginActivities);
 
 router.delete("/user/:userId", adminController.deleteUser);
-
 router.delete("/firm/:firmId", adminController.deleteFirm);
 
 router.get("/users", adminController.getAllUsers);
 
 module.exports = router;
-
