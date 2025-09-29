@@ -3,6 +3,20 @@ const router = express.Router();
 const adminController = require("../controllers/adminController");
 const upload = require("../middleware/upload");
 
+
+// Store uploads locally (or configure Cloudinary/S3 if needed)
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // make sure "uploads" folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
+
+
 // Firm management
 router.post(
   "/firm",
@@ -16,7 +30,6 @@ router.post(
   upload.single("profile_picture"),
   adminController.uploadFirmProfile
 );
-
 
 
 // Users inside a firm
