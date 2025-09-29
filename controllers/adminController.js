@@ -206,23 +206,39 @@ exports.updateUserStatus = async (req, res) => {
 exports.createNews = async (req, res) => {
   try {
     const news = await adminService.createNews(req.body, req.file, req.admin.id);
-    res.json(news);
+    res.json({
+      id: news.id,
+      title: news.title,
+      body: news.body,
+      link: news.link,
+      imageUrl: news.imageUrl,  // ✅ return Cloudinary/local path
+      publishedBy: news.publishedBy,
+      createdAt: news.created_at
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 // Edit news
 exports.editNews = async (req, res) => {
   try {
     const { newsId } = req.params;
     const news = await adminService.editNews(newsId, req.body, req.file);
-    res.json(news);
+    res.json({
+      id: news.id,
+      title: news.title,
+      body: news.body,
+      link: news.link,
+      imageUrl: news.imageUrl,  // ✅ return updated image
+      publishedBy: news.publishedBy,
+      createdAt: news.created_at
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Connect existing user to firm
 exports.connectUserToFirm = async (req, res) => {

@@ -299,14 +299,21 @@ exports.updateUserStatus = async (userId, status) => {
 
 // Create news
 exports.createNews = async (data, file, adminId) => {
-  return await News.create({
+  // Debugging step (check what file contains)
+  if (!file) {
+    throw new Error("No file uploaded. Make sure your frontend sends the image correctly.");
+  }
+
+  const news = await News.create({
     title: data.title,
     body: data.body,
     link: data.link || null,
-    imageUrl: file?.path || null, // ✅ use model field name
+    imageUrl: file?.path || null,  // ✅ correct model field
     publishedBy: adminId,
     created_at: new Date()
   });
+
+  return news;
 };
 
 // Edit news
@@ -314,14 +321,12 @@ exports.editNews = async (newsId, data, file) => {
   const news = await News.findByPk(newsId);
   if (!news) throw new Error("News not found");
 
-  Object.assign(news, {
-    title: data.title ?? news.title,
-    body: data.body ?? news.body,
-    link: data.link ?? news.link,
-  });
+  news.title = data.title ?? news.title;
+  news.body = data.body ?? news.body;
+  news.link = data.link ?? news.link;
 
   if (file?.path) {
-    news.imageUrl = file.path; // ✅ use model field name
+    news.imageUrl = file.path; // ✅ mapped correctly
   }
 
   await news.save();
