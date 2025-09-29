@@ -138,10 +138,10 @@ exports.upgradeUserAccount = async (req, res) => {
 
     try {
       await sendAccountUpgraded({
-        to: result.email, // Changed from result.user.email to result.email
+        to: result.user.email,
         level,
       });
-      console.log(`📧 Account upgraded email sent to ${result.email}`);
+      console.log(`📧 Account upgraded email sent to ${result.user.email}`);
     } catch (mailErr) {
       console.error("❌ Upgrade email failed:", mailErr.message);
     }

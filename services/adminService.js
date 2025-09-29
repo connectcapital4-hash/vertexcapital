@@ -222,8 +222,7 @@ exports.upgradeUserAccount = async (userId, level) => {
   if (!user) throw new Error("User not found");
   const firm = user.firm_id ? await Firm.findByPk(user.firm_id) : null;
 
-  // Update the status field instead of account_level
-  user.status = level;
+  user.account_level = level;
   await user.save();
 
   await Email.sendAccountUpgraded({
