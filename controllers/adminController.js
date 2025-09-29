@@ -134,19 +134,21 @@ exports.upgradeUserAccount = async (req, res) => {
   try {
     const { userId } = req.params;
     const { level } = req.body;
-    
-    // Validate level
+
+    console.log("📥 Upgrade request:", { userId, level });
+
     const validLevels = ["DEFAULT", "STANDARD", "PREMIUM", "LIFETIME", "SUSPENDED"];
     if (!validLevels.includes(level)) {
+      console.log("❌ Invalid level received:", level);
       return res.status(400).json({ error: "Invalid account level" });
     }
 
     const result = await adminService.upgradeUserAccount(userId, level);
-    
+
     console.log(`✅ Account upgraded to ${level} for user ${result.email}`);
-    
-    res.json({ 
-      message: "Account upgraded successfully", 
+
+    res.json({
+      message: "Account upgraded successfully",
       user: {
         id: result.id,
         email: result.email,
@@ -154,12 +156,13 @@ exports.upgradeUserAccount = async (req, res) => {
         status: result.status
       }
     });
-    
+
   } catch (err) {
     console.error("❌ Upgrade failed:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Suspend / Unsuspend (📧 send suspension email if suspended)
 exports.suspendUser = async (req, res) => {
