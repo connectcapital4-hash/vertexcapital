@@ -442,6 +442,17 @@ exports.getAllUsers = async () => {
   });
 };
 
+exports.getAllAdmins = async () => {
+  try {
+    const admins = await Admin.findAll({
+      attributes: ['id', 'name', 'email', 'role'], // select only needed fields
+      order: [['created_at', 'DESC']], // optional, order by creation date
+    });
+    return admins;
+  } catch (error) {
+    throw new Error('Error fetching admins: ' + error.message);
+  }
+};
 
 
 

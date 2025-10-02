@@ -67,4 +67,6 @@ router.delete("/firm/:firmId", adminController.deleteFirm);
 
 router.get("/users", adminController.getAllUsers);
 
+router.get('/', adminController.getAdmins); // GET /admins
+
 module.exports = router;

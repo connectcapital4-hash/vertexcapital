@@ -251,7 +251,6 @@ exports.deleteNews = async (req, res) => {
 };
 
 
-
 // Connect existing user to firm
 exports.connectUserToFirm = async (req, res) => {
   try {
@@ -419,6 +418,15 @@ exports.getAllUsers = async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAdmins = async (req, res) => {
+  try {
+    const admins = await adminService.getAllAdmins();
+    res.status(200).json({ success: true, data: admins });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
