@@ -11,7 +11,7 @@ const User = sequelize.define("User", {
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
   password_hash: { type: DataTypes.STRING, allowNull: true },
-  status: {
+  status: { // ✅ FIXED: Added proper opening brace
     type: DataTypes.ENUM("DEFAULT", "STANDARD", "PREMIUM", "LIFETIME", "SUSPENDED"),
     defaultValue: "DEFAULT",
   },
@@ -32,7 +32,7 @@ const User = sequelize.define("User", {
   otp_expiry: { type: DataTypes.DATE, allowNull: true },
   otp_request_count: { type: DataTypes.INTEGER, defaultValue: 0 },
   otp_request_reset_time: { type: DataTypes.DATE, allowNull: true },
-  profile_picture: { type: DataTypes.TEXT, allowNull: true },  // 👈 ADD THIS
+  profile_picture: { type: DataTypes.TEXT, allowNull: true },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 }, {
   tableName: "user",
