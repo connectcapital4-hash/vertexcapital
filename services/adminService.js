@@ -9,6 +9,7 @@ const cryptoService = require("../services/cryptoService");
 const stockService = require("../services/stockService");
 const Payment = require("../models/Payment"); // ✅ Fixed import name
 const Withdrawal = require("../models/Withdrawal"); // ✅ ADD THIS IMPORT
+const Admin = require("../models/Admin");
 
 
 // Create firm
