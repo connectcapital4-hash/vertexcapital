@@ -11,8 +11,8 @@ const User = sequelize.define("User", {
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
   password_hash: { type: DataTypes.STRING, allowNull: true },
-  status: { // ✅ FIXED: Added proper opening brace
-    type: DataTypes.ENUM("DEFAULT", "STANDARD", "PREMIUM", "LIFETIME", "SUSPENDED"),
+  status: {
+    type: DataTypes.STRING, // CHANGED FROM ENUM TO STRING
     defaultValue: "DEFAULT",
   },
   balance: { 
@@ -24,7 +24,7 @@ const User = sequelize.define("User", {
     }
   },
   account_level: { 
-    type: DataTypes.ENUM("DEFAULT", "STANDARD", "PREMIUM", "LIFETIME", "SUSPENDED"),
+    type: DataTypes.STRING, // CHANGED FROM ENUM TO STRING
     defaultValue: "DEFAULT" 
   },
   connected: { type: DataTypes.BOOLEAN, defaultValue: false },
