@@ -36,6 +36,8 @@ const withdrawalRoutes = require("./routes/withdrawalRoutes");
 const automationService = require("./services/automationService");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+// Add import at the top
+const publicAdminNewsRoutes = require("./routes/publicAdminNewsRoutes");
 
 // ✅ Import new services
 const cronService = require("./services/cronService");
@@ -60,6 +62,7 @@ app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/portfolio-growth", portfolioGrowthRoutes);
 app.use("/api/portfolio-withdrawal", portfolioWithdrawalRoutes);
+app.use("/api/public/admin-news", publicAdminNewsRoutes);
 
 // ✅ Health route (for uptime monitoring)
 app.get("/health", (req, res) => res.status(200).send("OK"));
