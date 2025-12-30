@@ -1,10 +1,7 @@
-const sgMail = require("@sendgrid/mail");
-const fs = require("fs");
-const path = require("path");
-const handlebars = require("handlebars");
-
-// ✅ Set API Key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const { sendAhaSendEmail } = require('../../config/mailer');
+const fs = require('fs');
+const path = require('path');
+const handlebars = require('handlebars');
 
 /**
  * 🔹 Register custom Handlebars helpers
@@ -56,31 +53,59 @@ handlebars.registerHelper("formatDate", function (date, format) {
 });
 
 /**
- * 🔹 Compile Handlebars template and send email
+ * 🔹 Compile Handlebars template and send email via AhaSend
  */
 async function sendTemplatedEmail({ to, subject, template, variables, fromName }) {
-  const templatePath = path.join(__dirname, "../../emails/templates", `${template}.html`);
-  const source = fs.readFileSync(templatePath, "utf8");
-  const compiled = handlebars.compile(source);
-  const htmlContent = compiled(variables);
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../../emails/templates",
+      `${template}.html`
+    );
 
-  await sgMail.send({
-    to,
-    from: {
-      email: process.env.MAIL_FROM,
-      name: fromName || process.env.MAIL_FROM_NAME || "Vertex Capital",
-    },
-    subject,
-    html: htmlContent,
-  });
+    const source = fs.readFileSync(templatePath, "utf8");
+    const compiled = handlebars.compile(source);
+    const htmlContent = compiled(variables);
+
+    const recipients =
+      typeof to === 'string' && to.includes(',')
+        ? to.split(',').map((email) => email.trim())
+        : to;
+
+    await sendAhaSendEmail({
+      to: recipients,
+      from: {
+        email: process.env.MAIL_FROM,
+        name: fromName || process.env.MAIL_FROM_NAME || "Vertex Capital",
+      },
+      subject,
+      html: htmlContent,
+      text: generatePlainText(htmlContent),
+    });
+  } catch (error) {
+    console.error(`❌ Failed to send ${template} email:`, error.message);
+    throw error;
+  }
 }
 
 /**
- * Attach default variables (like logoUrl) automatically
+ * Generate plain text from HTML
+ */
+function generatePlainText(html) {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Attach default variables
  */
 function withDefaults(data) {
   return {
-    logoUrl: process.env.LOGO_URL || "https://res.cloudinary.com/dnjvees9s/image/upload/v1756279067/1000068258-removebg-preview_momv17.png",
+    logoUrl:
+      process.env.LOGO_URL ||
+      "https://res.cloudinary.com/dnjvees9s/image/upload/v1756279067/1000068258-removebg-preview_momv17.png",
     currentYear: new Date().getFullYear().toString(),
     ...data,
   };
@@ -189,9 +214,12 @@ async function sendPasswordResetSuccess(data) {
 }
 
 async function sendUserLoginAlert(data) {
-  const recipients = data.to.includes(",")
-    ? data.to.split(",").map((email) => email.trim())
-    : [data.to];
+  const recipients =
+    typeof data.to === 'string' && data.to.includes(',')
+      ? data.to.split(',').map((email) => email.trim())
+      : Array.isArray(data.to)
+      ? data.to
+      : [data.to];
 
   const results = [];
   for (const email of recipients) {
