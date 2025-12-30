@@ -27,29 +27,20 @@ async function sendAhaSendEmail(emailData) {
       subject: emailData.subject,
       html: emailData.html,
       text: emailData.text,
-      recipients: recipients.map((email) => ({
-        email,
-      })),
+      recipients: recipients.map((email) => ({ email })),
     };
 
-    const response = await axios.post(
-      `${AHASEND_API_URL}/messages`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${AHASEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const response = await axios.post(`${AHASEND_API_URL}/messages`, payload, {
+      headers: {
+        Authorization: `Bearer ${AHASEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     console.log(`✅ Email sent via AhaSend: ${response.data.id}`);
     return response.data;
   } catch (error) {
-    console.error(
-      '❌ AhaSend email failed:',
-      error.response?.data || error.message
-    );
+    console.error('❌ AhaSend email failed:', error.response?.data || error.message);
     throw error;
   }
 }
@@ -60,7 +51,6 @@ async function sendAhaSendEmail(emailData) {
 async function verifyTransporter() {
   try {
     const testEmail = process.env.ADMIN_EMAIL.split(',')[0];
-
     await sendAhaSendEmail({
       to: testEmail,
       from: {
@@ -71,7 +61,6 @@ async function verifyTransporter() {
       text: 'This is a test email to confirm AhaSend setup.',
       html: '<p>This is a test email to confirm AhaSend setup.</p>',
     });
-
     console.log('📧 AhaSend Mailer is ready');
   } catch (err) {
     console.error('❌ AhaSend verification failed:', err.message);
