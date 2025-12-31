@@ -1,10 +1,10 @@
-const { sendAhaSendEmail } = require('../../config/mailer');
+const { sendPromailerEmail } = require('../../config/mailer');
 const fs = require('fs');
 const path = require('path');
 const handlebars = require('handlebars');
 
 /**
- * 🔹 Register custom Handlebars helpers
+ * 🔹 Register Handlebars helpers
  */
 handlebars.registerHelper("fallback", (value, fallbackValue) => (value?.toString().trim() ? value : fallbackValue));
 handlebars.registerHelper("uppercase", (str) => (str || "").toString().toUpperCase());
@@ -13,7 +13,6 @@ handlebars.registerHelper("formatDate", (date, format) => {
   if (!date) return "";
   const d = new Date(date);
   if (isNaN(d)) return date;
-
   const options = {};
   switch (format) {
     case "MMM DD, YYYY": options.month = "short"; options.day = "2-digit"; options.year = "numeric"; break;
@@ -25,7 +24,7 @@ handlebars.registerHelper("formatDate", (date, format) => {
 });
 
 /**
- * 🔹 Compile template and send email via AhaSend
+ * 🔹 Compile template and send email
  */
 async function sendTemplatedEmail({ to, subject, template, variables, fromName }) {
   try {
@@ -34,27 +33,31 @@ async function sendTemplatedEmail({ to, subject, template, variables, fromName }
     const compiled = handlebars.compile(source);
     const htmlContent = compiled(variables);
 
-    const recipients = typeof to === 'string' && to.includes(',') ? to.split(',').map(e => e.trim()) : to;
+    const recipients = typeof to === 'string' && to.includes(',') 
+      ? to.split(',').map(e => e.trim()) 
+      : Array.isArray(to) 
+      ? to 
+      : [to];
 
-    await sendAhaSendEmail({
+    await sendPromailerEmail({
       to: recipients,
-      from: { email: process.env.MAIL_FROM, name: fromName || process.env.MAIL_FROM_NAME || "Vertex Capital" },
+      from: { email: process.env.MAIL_FROM, name: fromName || process.env.MAIL_FROM_NAME },
       subject,
       html: htmlContent,
       text: htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
     });
-  } catch (error) {
-    console.error(`❌ Failed to send ${template} email:`, error.message);
-    throw error;
+  } catch (err) {
+    console.error(`❌ Failed to send ${template} email:`, err.message);
+    throw err;
   }
 }
 
 /**
- * Attach default variables
+ * 🔹 Default template variables
  */
 function withDefaults(data) {
   return {
-    logoUrl: process.env.LOGO_URL || "https://res.cloudinary.com/dnjvees9s/image/upload/v1756279067/1000068258-removebg-preview_momv17.png",
+    logoUrl: process.env.LOGO_URL,
     currentYear: new Date().getFullYear().toString(),
     ...data,
   };
@@ -63,23 +66,133 @@ function withDefaults(data) {
 /**
  * 🔹 Individual email functions
  */
-async function sendSignupEmail(data) { return sendTemplatedEmail({ ...data, subject: "Welcome to Vertex Capital 🎉", template: "signup-capital-connect", variables: withDefaults(data) }); }
-async function sendFirmConnectOtp(data) { return sendTemplatedEmail({ ...data, subject: `Connect to ${data.firmName} — verification code`, template: "firm-connect-otp", variables: withDefaults(data) }); }
-async function sendCreditAlert(data) { return sendTemplatedEmail({ ...data, subject: `Credit Alert — ${data.firmName}`, template: "credit-alert", variables: withDefaults(data) }); }
-async function sendProfitTopup(data) { return sendTemplatedEmail({ ...data, subject: `Profit Top-Up (${data.range}) — ${data.firmName}`, template: "profit-topup-alert", variables: withDefaults(data) }); }
-async function sendAccountUpgraded(data) { return sendTemplatedEmail({ ...data, subject: `Account upgraded to ${data.level}`, template: "account-upgrade", variables: withDefaults(data) }); }
-async function sendAccountSuspended(data) { return sendTemplatedEmail({ ...data, subject: `Account Suspended — ${data.firmName}`, template: "account-suspended", variables: withDefaults(data) }); }
-async function sendAccountUnsuspended(data) { return sendTemplatedEmail({ ...data, subject: `Account Restored — ${data.firmName}`, template: "account-unsuspended", variables: withDefaults(data) }); }
-async function sendStatusChanged(data) { return sendTemplatedEmail({ ...data, subject: `Your account status is now ${data.status}`, template: "account-status-changed", variables: withDefaults(data) }); }
-async function sendLoginOtp(data) { return sendTemplatedEmail({ ...data, subject: "Your Vertex Capital login code", template: "login-otp", variables: withDefaults(data) }); }
-async function sendPasswordResetOtp(data) { return sendTemplatedEmail({ ...data, subject: "Password Reset Code — Vertex Capital", template: "password-reset-otp", variables: withDefaults(data) }); }
-async function sendPasswordResetSuccess(data) { return sendTemplatedEmail({ ...data, subject: "Password Reset Successful ✅", template: "password-reset-success", variables: withDefaults(data) }); }
+async function sendSignupEmail(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: "Welcome to Vertex Capital 🎉", 
+    template: "signup-capital-connect", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendFirmConnectOtp(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Connect to ${data.firmName} — verification code`, 
+    template: "firm-connect-otp", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendCreditAlert(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Credit Alert — ${data.firmName}`, 
+    template: "credit-alert", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendProfitTopup(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Profit Top-Up (${data.range}) — ${data.firmName}`, 
+    template: "profit-topup-alert", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendAccountUpgraded(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Account upgraded to ${data.level}`, 
+    template: "account-upgrade", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendAccountSuspended(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Account Suspended — ${data.firmName}`, 
+    template: "account-suspended", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendAccountUnsuspended(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Account Restored — ${data.firmName}`, 
+    template: "account-unsuspended", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendStatusChanged(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: `Your account status is now ${data.status}`, 
+    template: "account-status-changed", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendLoginOtp(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: "Your Vertex Capital login code", 
+    template: "login-otp", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendPasswordResetOtp(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: "Password Reset Code — Vertex Capital", 
+    template: "password-reset-otp", 
+    variables: withDefaults(data) 
+  });
+}
+
+async function sendPasswordResetSuccess(data) {
+  return sendTemplatedEmail({ 
+    ...data, 
+    subject: "Password Reset Successful ✅", 
+    template: "password-reset-success", 
+    variables: withDefaults(data) 
+  });
+}
+
 async function sendUserLoginAlert(data) {
-  const recipients = typeof data.to === 'string' && data.to.includes(',') ? data.to.split(',').map(e => e.trim()) : Array.isArray(data.to) ? data.to : [data.to];
-  return Promise.all(recipients.map(email => sendTemplatedEmail({ ...data, to: email, subject: `🔔 User Login Alert — ${data.firmName || "Vertex Capital"}`, template: "user-login-alert", variables: withDefaults({ userName: data.userName, userEmail: data.userEmail, firmName: data.firmName, loginTime: data.loginTime, ipAddress: data.ipAddress }) })));
+  const recipients = typeof data.to === 'string' && data.to.includes(',') 
+    ? data.to.split(',').map(e => e.trim()) 
+    : Array.isArray(data.to) 
+    ? data.to 
+    : [data.to];
+
+  return Promise.all(
+    recipients.map(email => 
+      sendTemplatedEmail({ 
+        ...data, 
+        to: email, 
+        subject: `🔔 User Login Alert — ${data.firmName || "Vertex Capital"}`, 
+        template: "user-login-alert", 
+        variables: withDefaults({
+          userName: data.userName,
+          userEmail: data.userEmail,
+          firmName: data.firmName,
+          loginTime: data.loginTime,
+          ipAddress: data.ipAddress
+        }) 
+      })
+    )
+  );
 }
 
 module.exports = {
+  sendTemplatedEmail,
   sendSignupEmail,
   sendFirmConnectOtp,
   sendCreditAlert,
@@ -92,5 +205,7 @@ module.exports = {
   sendPasswordResetOtp,
   sendPasswordResetSuccess,
   sendUserLoginAlert,
-  sendTemplatedEmail,
 };
+  
+
+

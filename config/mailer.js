@@ -1,78 +1,84 @@
 const axios = require('axios');
+const nodemailer = require('nodemailer');
 
-// AhaSend configuration
-const AHASEND_API_KEY = process.env.AHASEND_API_KEY;
-const AHASEND_API_URL = process.env.AHASEND_API_URL || 'https://api.ahasend.com/v2';
+const PROMAILER_API_KEY = process.env.PROMAILER_API_KEY;
+const PROMAILER_API_URL = process.env.PROMAILER_API_URL;
 
-if (!AHASEND_API_KEY) {
-  console.error("❌ AHASEND_API_KEY is missing in environment variables");
-} else {
-  console.log("📧 Using AhaSend as default mailer");
-}
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = process.env.SMTP_PORT;
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
 
 /**
- * Send email via AhaSend API (v2)
+ * 🔹 Nodemailer SMTP Transport (Backup)
  */
-async function sendAhaSendEmail(emailData) {
+const smtpTransporter = nodemailer.createTransport({
+  host: SMTP_HOST,
+  port: Number(SMTP_PORT),
+  secure: Number(SMTP_PORT) === 465, // true for 465, false for other ports
+  auth: {
+    user: SMTP_USER,
+    pass: SMTP_PASS,
+  },
+});
+
+/**
+ * 🔹 Send email via Promailer API
+ */
+async function sendPromailerEmail({ to, subject, html, text, from }) {
   try {
-    const recipients = Array.isArray(emailData.to)
-      ? emailData.to
-      : [emailData.to];
+    const recipients = Array.isArray(to) ? to : [to];
 
     const payload = {
       from: {
-        email: emailData.from?.email || process.env.MAIL_FROM,
-        name: emailData.from?.name || process.env.MAIL_FROM_NAME || 'Vertex Capital',
+        email: from?.email || process.env.MAIL_FROM,
+        name: from?.name || process.env.MAIL_FROM_NAME || 'Vertex Capital',
       },
-      subject: emailData.subject,
-      html: emailData.html,
-      text: emailData.text,
-      recipients: recipients.map((email) => ({ email })),
+      to: recipients,
+      subject,
+      html,
+      text,
     };
 
-    const response = await axios.post(`${AHASEND_API_URL}/messages`, payload, {
+    const response = await axios.post(PROMAILER_API_URL, payload, {
       headers: {
-        Authorization: `Bearer ${AHASEND_API_KEY}`,
+        'Authorization': `Bearer ${PROMAILER_API_KEY}`,
         'Content-Type': 'application/json',
       },
     });
 
-    console.log(`✅ Email sent via AhaSend: ${response.data.id}`);
+    console.log(`✅ Email sent via Promailer: ${response.data?.id || 'OK'}`);
     return response.data;
-  } catch (error) {
-    console.error('❌ AhaSend email failed:', error.response?.data || error.message);
-    throw error;
+  } catch (err) {
+    console.error('❌ Promailer failed:', err.response?.data || err.message);
+    console.log('ℹ️ Falling back to SMTP...');
+    return sendSMTPEmail({ to, subject, html, text, from });
   }
 }
 
 /**
- * Verify AhaSend transporter
+ * 🔹 Send email via SMTP (Backup)
  */
-async function verifyTransporter() {
+async function sendSMTPEmail({ to, subject, html, text, from }) {
   try {
-    const testEmail = process.env.ADMIN_EMAIL.split(',')[0];
-    await sendAhaSendEmail({
-      to: testEmail,
-      from: {
-        email: process.env.MAIL_FROM,
-        name: process.env.MAIL_FROM_NAME || 'Vertex Capital',
-      },
-      subject: '✅ AhaSend Mailer is ready',
-      text: 'This is a test email to confirm AhaSend setup.',
-      html: '<p>This is a test email to confirm AhaSend setup.</p>',
-    });
-    console.log('📧 AhaSend Mailer is ready');
+    const mailOptions = {
+      from: `${from?.name || process.env.MAIL_FROM_NAME} <${from?.email || process.env.MAIL_FROM}>`,
+      to,
+      subject,
+      html,
+      text,
+    };
+    const info = await smtpTransporter.sendMail(mailOptions);
+    console.log(`✅ Email sent via SMTP: ${info.messageId}`);
+    return info;
   } catch (err) {
-    console.error('❌ AhaSend verification failed:', err.message);
+    console.error('❌ SMTP failed:', err.message);
+    throw err;
   }
 }
 
-// Don't run verification in tests
-if (process.env.NODE_ENV !== 'test') {
-  verifyTransporter();
-}
-
 module.exports = {
-  sendEmail: sendAhaSendEmail,
-  sendAhaSendEmail,
+  sendEmail: sendPromailerEmail,
+  sendPromailerEmail,
+  sendSMTPEmail,
 };
