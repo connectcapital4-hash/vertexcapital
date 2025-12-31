@@ -1,9 +1,25 @@
 // server.js
 console.log("server.js loaded");
 
+// ✅ LOAD ENVIRONMENT VARIABLES FIRST - BEFORE ANY OTHER IMPORTS
+require("dotenv").config({ override: true, debug: true });
+
+// ✅ Debug: Check if mailer variables are loaded
+console.log('🔧 Environment Variables Status:');
+console.log('PROMAILER_API_KEY present:', !!process.env.PROMAILER_API_KEY);
+console.log('SMTP_HOST present:', !!process.env.SMTP_HOST);
+console.log('SMTP_USER present:', !!process.env.SMTP_USER);
+console.log('MAIL_FROM present:', !!process.env.MAIL_FROM);
+
+// ✅ Force set if missing (temporary fix)
+if (!process.env.PROMAILER_API_KEY) {
+  console.log('⚠️ PROMAILER_API_KEY missing, setting manually...');
+  process.env.PROMAILER_API_KEY = '9d1b5eb5-872a-4663-a10e-877c18d94cb6';
+  process.env.PROMAILER_API_URL = 'https://mailserver.automationlounge.com/api/v1/messages/send';
+}
+
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
 
 const app = express();
 
