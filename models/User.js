@@ -8,31 +8,38 @@ const Portfolio = require("./Portfolio");
 const User = sequelize.define("User", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   firm_id: { type: DataTypes.INTEGER, allowNull: true },
+
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
   password_hash: { type: DataTypes.STRING, allowNull: true },
-  status: {
-    type: DataTypes.STRING, // CHANGED FROM ENUM TO STRING
-    defaultValue: "DEFAULT",
-  },
-  balance: { 
+
+  // 🔐 Access key
+  access_key_hash: { type: DataTypes.STRING, allowNull: false },
+
+  // 🔐 Security question
+  security_question: { type: DataTypes.STRING, allowNull: false },
+  security_answer_hash: { type: DataTypes.STRING, allowNull: false },
+
+  // 🔐 OTP (encrypted)
+  otp: { type: DataTypes.TEXT, allowNull: true },
+  otp_expiry: { type: DataTypes.DATE, allowNull: true },
+
+  status: { type: DataTypes.STRING, defaultValue: "DEFAULT" },
+  balance: {
     type: DataTypes.DECIMAL(15, 2),
     defaultValue: 0,
     get() {
-      const rawValue = this.getDataValue("balance");
-      return rawValue === null ? 0 : parseFloat(rawValue);
+      const raw = this.getDataValue("balance");
+      return raw ? parseFloat(raw) : 0;
     }
   },
-  account_level: { 
-    type: DataTypes.STRING, // CHANGED FROM ENUM TO STRING
-    defaultValue: "DEFAULT" 
-  },
+  account_level: { type: DataTypes.STRING, defaultValue: "DEFAULT" },
   connected: { type: DataTypes.BOOLEAN, defaultValue: false },
-  otp: { type: DataTypes.STRING, allowNull: true },
-  otp_expiry: { type: DataTypes.DATE, allowNull: true },
+
   otp_request_count: { type: DataTypes.INTEGER, defaultValue: 0 },
-  otp_request_reset_time: { type: DataTypes.DATE, allowNull: true },
-  profile_picture: { type: DataTypes.TEXT, allowNull: true },
+  otp_request_reset_time: { type: DataTypes.DATE },
+
+  profile_picture: { type: DataTypes.TEXT },
   created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 }, {
   tableName: "user",
@@ -42,9 +49,7 @@ const User = sequelize.define("User", {
 
 // Associations
 User.hasMany(Withdrawal, { foreignKey: "user_id", as: "withdrawals" });
-Withdrawal.belongsTo(User, { foreignKey: "user_id", as: "user" });
 User.belongsTo(Firm, { foreignKey: "firm_id", as: "firm" });
 User.hasMany(Portfolio, { foreignKey: "user_id", as: "portfolio" });
-Portfolio.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 module.exports = User;

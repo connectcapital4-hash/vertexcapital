@@ -1,37 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/userController");
+const userController = require("../controllers/userController.js");
 const { authUser } = require("../middleware/authUser");
-const { upload } = require("../middleware/upload"); // ✅ destructured
+const { upload } = require("../middleware/upload");
 
-// Public routes
-router.post("/login", userController.login);           // step 1: request OTP
-router.post("/verify-otp", userController.verifyOtp);  // step 2: verify OTP & get JWT
+// Public
 router.post("/register", userController.register);
+router.post("/login", userController.login);
+router.post("/verify-otp", userController.verifyOtp);
+router.post("/reset-password", userController.resetPassword);
+router.post("/regenerate-access-key", userController.regenerateAccessKey);
 
-// Protected routes
+// Protected
 router.get("/me", authUser, userController.me);
 
-// ✅ Profile picture upload
 router.put(
   "/profile-picture",
   authUser,
-  upload.single("profile_picture"), // ✅ works now
+  upload.single("profile_picture"),
   userController.updateProfilePicture
 );
 
-// Firm connection flow
-router.post("/request-firm-connect", userController.requestFirmConnect);
-router.post("/verify-firm-connect", userController.verifyFirmConnect);
-
-// Password reset flow
-router.post("/request-password-reset", userController.requestPasswordReset);
-router.post("/reset-password", userController.resetPassword);
-
-// Search firms
+// Search & News
 router.get("/search-firms", userController.searchFirms);
-
-// News endpoint (public)
 router.get("/news", userController.getNews);
+
+console.log("me:", typeof userController.me);
+console.log("updateProfilePicture:", typeof userController.updateProfilePicture);
+
 
 module.exports = router;
