@@ -1,20 +1,18 @@
-// backend/config/db.js
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
-const DATABASE_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.DATABASE_URL_INTERNAL
-    : process.env.DATABASE_URL; // use external locally
+// Always use external URL for Render
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const sequelize = new Sequelize(DATABASE_URL, {
   dialect: "postgres",
   protocol: "postgres",
-  logging: false, // set true to see SQL queries
+  logging: false, // set true for debugging SQL
   dialectOptions: {
-    ssl: process.env.NODE_ENV === "production"
-      ? false // internal connection on Render
-      : { require: true, rejectUnauthorized: false }, // external URL SSL
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // required for Neon external SSL
+    },
   },
 });
 
