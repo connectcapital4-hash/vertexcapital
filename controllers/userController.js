@@ -16,7 +16,6 @@ const API_KEY = process.env.FINNHUB_API_KEY;
 /* ===========================
    🔐 CRYPTO HELPERS
 =========================== */
-
 const generateAccessKey = () =>
   crypto.randomBytes(7).toString("hex").toUpperCase().slice(0, 13);
 
@@ -46,11 +45,9 @@ const decryptOtp = (payload, key) => {
 /* ===========================
    🟢 REGISTER
 =========================== */
-
 exports.register = async (req, res) => {
   try {
     const { name, email, password, security_question, security_answer } = req.body;
-
     if (!security_question || !security_answer)
       return res.status(400).json({ message: "Security question & answer required" });
 
@@ -70,7 +67,7 @@ exports.register = async (req, res) => {
       profile_picture: null,
     });
 
-    return res.json({
+    res.json({
       message: "Registration successful. SAVE THIS ACCESS KEY.",
       access_key: accessKey
     });
@@ -80,9 +77,8 @@ exports.register = async (req, res) => {
 };
 
 /* ===========================
-   🟢 LOGIN (STEP 1)
+   🟢 LOGIN (STEP 1) — NOW RETURNS OTP FOR TESTING
 =========================== */
-
 exports.login = async (req, res) => {
   try {
     const { email, password, access_key } = req.body;
@@ -104,7 +100,8 @@ exports.login = async (req, res) => {
     user.otp_expiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    res.json({ message: "OTP generated. Unlock with your access key." });
+    // FOR TESTING: return OTP to frontend (insecure in production)
+    res.json({ message: "OTP generated. Use it to verify.", otp });
   } catch (err) {
     res.status(500).json({ message: "Login failed", error: err.message });
   }
@@ -113,7 +110,6 @@ exports.login = async (req, res) => {
 /* ===========================
    🟢 VERIFY OTP
 =========================== */
-
 exports.verifyOtp = async (req, res) => {
   try {
     const { email, otp, access_key } = req.body;
@@ -153,7 +149,6 @@ exports.verifyOtp = async (req, res) => {
 /* ===========================
    🔑 RESET PASSWORD
 =========================== */
-
 exports.resetPassword = async (req, res) => {
   try {
     const { email, otp, access_key, newPassword } = req.body;
@@ -179,7 +174,6 @@ exports.resetPassword = async (req, res) => {
 /* ===========================
    🔄 REGENERATE ACCESS KEY
 =========================== */
-
 exports.regenerateAccessKey = async (req, res) => {
   try {
     const { email, security_answer } = req.body;
@@ -203,7 +197,6 @@ exports.regenerateAccessKey = async (req, res) => {
 /* ===========================
    🔍 SEARCH FIRMS
 =========================== */
-
 exports.searchFirms = async (req, res) => {
   try {
     const { q } = req.query;
@@ -252,7 +245,6 @@ exports.searchFirms = async (req, res) => {
 /* ===========================
    📰 NEWS
 =========================== */
-
 exports.getNews = async (req, res) => {
   try {
     const News = require("../models/news");
@@ -263,6 +255,9 @@ exports.getNews = async (req, res) => {
   }
 };
 
+/* ===========================
+   🧑‍💼 GET PROFILE
+=========================== */
 exports.me = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
@@ -291,6 +286,9 @@ exports.me = async (req, res) => {
   }
 };
 
+/* ===========================
+   🖼 UPDATE PROFILE PICTURE
+=========================== */
 exports.updateProfilePicture = async (req, res) => {
   try {
     if (req.file && req.file.path) {
