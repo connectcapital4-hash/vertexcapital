@@ -151,15 +151,36 @@ exports.verifyOtp = async (req, res) => {
 =========================== */
 exports.resetPassword = async (req, res) => {
   try {
-    const { email, otp, access_key, newPassword } = req.body;
+    const { email, access_key, otp, newPassword, confirmPassword } = req.body;
+
+    if (!email || !access_key || !otp || !newPassword || !confirmPassword)
+      return res.status(400).json({ message: "All fields are required" });
+
+    if (newPassword !== confirmPassword)
+      return res.status(400).json({ message: "Passwords do not match" });
 
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    const decryptedOtp = decryptOtp(user.otp, access_key);
+    if (!user.otp || !user.otp_expiry)
+      return res.status(400).json({ message: "No OTP generated. Request a reset first." });
+
+    // check OTP expiration
+    if (Date.now() > new Date(user.otp_expiry).getTime())
+      return res.status(400).json({ message: "OTP expired. Request a new one." });
+
+    // decrypt OTP using access key
+    let decryptedOtp;
+    try {
+      decryptedOtp = decryptOtp(user.otp, access_key);
+    } catch {
+      return res.status(400).json({ message: "Invalid access key" });
+    }
+
     if (decryptedOtp !== otp)
       return res.status(400).json({ message: "Invalid OTP or access key" });
 
+    // all good → update password
     user.password_hash = await bcrypt.hash(newPassword, 10);
     user.otp = null;
     user.otp_expiry = null;
@@ -171,6 +192,38 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+
+exports.requestPasswordReset = async (req, res) => {
+  try {
+    const { email, access_key } = req.body;
+
+    if (!email || !access_key)
+      return res.status(400).json({ message: "Email and access key required" });
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    // verify access key
+    const validKey = await bcrypt.compare(access_key, user.access_key_hash);
+    if (!validKey) return res.status(401).json({ message: "Invalid access key" });
+
+    // generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // encrypt OTP using access key
+    user.otp = encryptOtp(otp, access_key);
+    user.otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    await user.save();
+
+    // send OTP to frontend (for testing; in production you might show differently)
+    res.json({
+      message: "OTP generated for password reset",
+      otp, // frontend displays OTP for testing; in production you could mask
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to request password reset", error: err.message });
+  }
+};
 /* ===========================
    🔄 REGENERATE ACCESS KEY
 =========================== */

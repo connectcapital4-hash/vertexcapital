@@ -8,7 +8,10 @@ const { upload } = require("../middleware/upload");
 router.post("/register", userController.register);
 router.post("/login", userController.login);          // returns OTP for testing
 router.post("/verify-otp", userController.verifyOtp);
-router.post("/reset-password", userController.resetPassword);
+// Password reset flow
+router.post("/request-password-reset", userController.requestPasswordReset); // step 1: generate OTP
+router.post("/reset-password", userController.resetPassword);               // step 2: submit OTP + new password
+
 router.post("/regenerate-access-key", userController.regenerateAccessKey);
 
 // Protected
